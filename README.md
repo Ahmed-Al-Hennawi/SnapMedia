@@ -42,18 +42,52 @@ To save a file, paste a public video link, choose **MP4** or **MP3**, select **G
 
 The running site includes `/terms`, `/privacy`, `/copyright`, `/cookies`, and `/contact`. The footer's **Privacy choices** control lets visitors review or change optional preferences. Advertising and analytics are currently off; the labeled ad spaces are inactive placeholders. The policies still need the final operator, hosting, and log details before public launch.
 
-## Deploy
+## Project structure
 
-Use a Linux host with enough CPU, disk space, and bandwidth for video conversion. Install the Python requirements, FFmpeg, FFprobe, `libx264`, and Node.js, then run Gunicorn behind an HTTPS reverse proxy:
+This tree lists the files tracked in the project. Generated downloads, the local virtual environment, and cache files are ignored by Git.
 
-```bash
-export SNAPMEDIA_SITE_URL="https://your-domain.example"
-gunicorn --workers 1 --threads 8 --timeout 120 --bind "0.0.0.0:${PORT:-8000}" app:app
+```text
+SnapMedia/
+├── .env.example                   Example environment settings
+├── .gitignore                     Local and generated files excluded from Git
+├── README.md                      Project overview and local setup
+├── app.py                         Flask server, routes, and media preparation
+├── requirements.txt               Python packages needed to run the app
+├── requirements-dev.txt           Python packages for tests and audits
+├── start-mac.sh                   macOS local startup script
+├── docs/
+│   ├── ads.txt.example            Example publisher authorization file
+│   ├── adsense-readiness.md        Advertising readiness notes
+│   ├── assets/
+│   │   └── snapmedia-demo.gif      Website walkthrough shown above
+│   ├── launch-readiness.md         Prelaunch checklist
+│   └── production-audit.md        Production review and open risks
+├── instance/
+│   └── downloads/
+│       └── .gitkeep                Keeps the temporary download folder in Git
+├── tests/
+│   └── test_app.py                 Backend and route regression tests
+└── web/
+    ├── ads-config.js              Settings for inactive ad spaces
+    ├── ads-placeholders.css        Ad space styling
+    ├── ads-placeholders.js         Ad space behavior
+    ├── app.js                      Downloader interface and interactions
+    ├── config.js                   Public site configuration
+    ├── contact.html                Contact page
+    ├── cookies.html                Cookie Policy page
+    ├── copyright.html              Copyright Policy page
+    ├── favicon.svg                 Browser tab icon
+    ├── i18n.js                     Interface translations
+    ├── index.html                  Main website page
+    ├── legal.js                    Legal page translations and content
+    ├── privacy-controls.css        Privacy controls styling
+    ├── privacy-controls.js         Cookie consent and privacy choices
+    ├── privacy.html                 Privacy Policy page
+    ├── snapmedia-logo.png          Main logo image
+    ├── snapmedia-logo.webp         Optimized main logo image
+    ├── styles.css                  Main website styling
+    └── terms.html                  Terms of Use page
 ```
-
-Set `SNAPMEDIA_SITE_URL` to your final HTTPS origin, without a path. It supplies the site's canonical URLs, social previews, and sitemap. If a trusted proxy sets forwarding headers, set `SNAPMEDIA_TRUSTED_PROXY_COUNT` to the exact number of trusted proxy hops; otherwise leave its default of `0`.
-
-**Keep one worker process** with the current in-memory job store. Jobs and their temporary files must stay on the same instance until download, and a restart clears active jobs. Review the [launch checklist](docs/launch-readiness.md), [production audit](docs/production-audit.md), and [AdSense readiness notes](docs/adsense-readiness.md) before publishing, especially the hosting, network, legal, and platform checks. The `/api/health` endpoint checks local media tools but cannot confirm that an external platform will provide a downloadable format.
 
 ## Verify changes
 
@@ -63,7 +97,7 @@ python -m pytest -q
 python -m pip_audit --local
 ```
 
-The tests cover URL validation, page routes, SEO output, request limits, and MP4 conversion. After deployment, also try a current permitted link from each platform; their formats and access rules can change.
+The tests cover URL validation, page routes, SEO output, request limits, and MP4 conversion. For a real-world check, also try a current permitted link from each platform; their formats and access rules can change.
 
 ## Contact
 
