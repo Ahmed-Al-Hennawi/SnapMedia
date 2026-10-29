@@ -38,6 +38,10 @@ Open **http://127.0.0.1:5000**. If port 5000 is in use, start with `PORT=5001 py
 
 To save a file, paste a public video link, choose **MP4** or **MP3**, select **Get download options**, then choose **Download** or **Download HD**. Long videos that need conversion can take several minutes.
 
+## Policies and privacy choices
+
+The running site includes `/terms`, `/privacy`, `/copyright`, `/cookies`, and `/contact`. The footer's **Privacy choices** control lets visitors review or change optional preferences. Advertising and analytics are currently off; the labeled ad spaces are inactive placeholders. The policies still need the final operator, hosting, and log details before public launch.
+
 ## Deploy
 
 Use a Linux host with enough CPU, disk space, and bandwidth for video conversion. Install the Python requirements, FFmpeg, FFprobe, `libx264`, and Node.js, then run Gunicorn behind an HTTPS reverse proxy:
@@ -49,7 +53,7 @@ gunicorn --workers 1 --threads 8 --timeout 120 --bind "0.0.0.0:${PORT:-8000}" ap
 
 Set `SNAPMEDIA_SITE_URL` to your final HTTPS origin, without a path. It supplies the site's canonical URLs, social previews, and sitemap. If a trusted proxy sets forwarding headers, set `SNAPMEDIA_TRUSTED_PROXY_COUNT` to the exact number of trusted proxy hops; otherwise leave its default of `0`.
 
-**Keep one worker process** with the current in-memory job store. Jobs and their temporary files must stay on the same instance until download, and a restart clears active jobs. Review the [launch checklist](docs/launch-readiness.md) before publishing, especially the hosting, network, legal, and platform checks. The `/api/health` endpoint checks local media tools but cannot confirm that an external platform will provide a downloadable format.
+**Keep one worker process** with the current in-memory job store. Jobs and their temporary files must stay on the same instance until download, and a restart clears active jobs. Review the [launch checklist](docs/launch-readiness.md), [production audit](docs/production-audit.md), and [AdSense readiness notes](docs/adsense-readiness.md) before publishing, especially the hosting, network, legal, and platform checks. The `/api/health` endpoint checks local media tools but cannot confirm that an external platform will provide a downloadable format.
 
 ## Verify changes
 

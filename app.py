@@ -362,7 +362,8 @@ def secure_headers(response):
     )
     if request.path.startswith("/api/") or response.status_code >= 400:
         response.headers["Cache-Control"] = "no-store"
-    elif request.path in ("/", "/terms", "/privacy", "/robots.txt", "/sitemap.xml"):
+    elif request.path in ("/", "/terms", "/privacy", "/copyright", "/cookies", "/contact",
+                               "/robots.txt", "/sitemap.xml"):
         response.headers["Cache-Control"] = "public, max-age=300, must-revalidate"
     else:
         response.headers["Cache-Control"] = "public, max-age=3600, must-revalidate"
@@ -389,6 +390,21 @@ def privacy():
     return public_page("privacy.html", "/privacy")
 
 
+@app.route("/copyright")
+def copyright_policy():
+    return public_page("copyright.html", "/copyright")
+
+
+@app.route("/cookies")
+def cookie_policy():
+    return public_page("cookies.html", "/cookies")
+
+
+@app.route("/contact")
+def contact_page():
+    return public_page("contact.html", "/contact")
+
+
 @lru_cache(maxsize=3)
 def page_source(filename: str) -> str:
     return (WEB / filename).read_text(encoding="utf-8")
@@ -402,11 +418,17 @@ def public_page(filename: str, path: str):
         url = PUBLIC_SITE_URL + path
         title = {"/": "SnapMedia — Download Public Videos and MP3 Audio",
                  "/terms": "Terms of Service — SnapMedia",
-                 "/privacy": "Privacy Policy — SnapMedia"}[path]
+                 "/privacy": "Privacy Policy — SnapMedia",
+                 "/copyright": "Copyright Policy — SnapMedia",
+                 "/cookies": "Cookie Policy — SnapMedia",
+                 "/contact": "Contact — SnapMedia"}[path]
         description = {
             "/": "Download public TikTok, Instagram, YouTube and Facebook videos as playable MP4 or MP3 audio when you have permission. No account needed.",
             "/terms": "Read the terms for using SnapMedia to save public media you own or have permission to download.",
             "/privacy": "Learn how SnapMedia handles video links, temporary downloads and language preferences.",
+            "/copyright": "Learn how to report copyright concerns about media processed by SnapMedia.",
+            "/cookies": "Learn how SnapMedia uses browser storage and manages privacy preferences.",
+            "/contact": "Contact SnapMedia about support, copyright, privacy or business enquiries.",
         }[path]
         seo = (f'<link rel="canonical" href="{html.escape(url, quote=True)}">'
                f'<meta property="og:type" content="website">'
@@ -441,7 +463,7 @@ def sitemap():
     if not PUBLIC_SITE_URL:
         return make_response("Set SNAPMEDIA_SITE_URL before publishing.\n", 503, {"Content-Type": "text/plain"})
     urls = "".join(f"<url><loc>{html.escape(PUBLIC_SITE_URL + path)}</loc></url>"
-                   for path in ("/", "/terms", "/privacy"))
+                   for path in ("/", "/terms", "/privacy", "/copyright", "/cookies", "/contact"))
     response = make_response(f'<?xml version="1.0" encoding="UTF-8"?>'
                              f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>')
     response.mimetype = "application/xml"
@@ -450,7 +472,8 @@ def sitemap():
 
 @app.route("/<path:filename>")
 def static_files(filename):
-    canonical_pages = {"index.html": "/", "terms.html": "/terms", "privacy.html": "/privacy"}
+    canonical_pages = {"index.html": "/", "terms.html": "/terms", "privacy.html": "/privacy",
+                       "copyright.html": "/copyright", "cookies.html": "/cookies", "contact.html": "/contact"}
     if filename in canonical_pages:
         return redirect(canonical_pages[filename], code=301)
     if "/" in filename or filename.startswith("."):
