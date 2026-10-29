@@ -1,4 +1,4 @@
-"""SnapMedia — lightweight Flask + yt-dlp prototype.
+"""SnapMedia — Flask + yt-dlp media downloader.
 
 Download only public media you own or are permitted to save. No logins,
 private content access, credential handling, or DRM circumvention.
@@ -14,6 +14,7 @@ import threading
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
@@ -81,7 +82,7 @@ def identify_url(raw: str) -> tuple[str, str]:
 
 
 def ydl_base() -> dict:
-    return {
+    options = {
         "quiet": True,
         "no_warnings": True,
         "noplaylist": True,
@@ -93,6 +94,10 @@ def ydl_base() -> dict:
         "skip_download": True,
         "nocheckcertificate": False,
     }
+    # yt-dlp's YouTube challenge solver needs an enabled JavaScript runtime.
+    if shutil.which("node"):
+        options["js_runtimes"] = {"node": {}}
+    return options
 
 
 def extract_metadata(url: str) -> dict:
@@ -136,8 +141,20 @@ def clear_expired():
                    and job["status"] not in ("queued", "working")]
         for key in expired:
             _jobs.pop(key, None)
+        known_jobs = set(_jobs)
     for key in expired:
         shutil.rmtree(DOWNLOAD_DIR / key, ignore_errors=True)
+    # A server restart loses in-memory job records; clean their old files too.
+    for folder in DOWNLOAD_DIR.iterdir():
+        if (folder.is_symlink() or not folder.is_dir()
+                or not re.fullmatch(r"[0-9a-f]{32}", folder.name)
+                or folder.name in known_jobs):
+            continue
+        try:
+            if now - folder.stat().st_mtime > FILE_TTL_SECONDS:
+                shutil.rmtree(folder, ignore_errors=True)
+        except FileNotFoundError:
+            pass
 
 
 def periodic_cleanup():
@@ -169,6 +186,20 @@ def media_streams(path: Path) -> list[dict]:
     return json.loads(probe.stdout).get("streams", [])
 
 
+@lru_cache(maxsize=1)
+def has_h264_encoder() -> bool:
+    if not shutil.which("ffmpeg"):
+        return False
+    try:
+        result = subprocess.run(
+            ["ffmpeg", "-hide_banner", "-encoders"],
+            capture_output=True, text=True, check=True, timeout=10,
+        )
+        return any(re.search(r"\blibx264\b", line) for line in result.stdout.splitlines())
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
 def compatible_mp4(source: Path) -> Path:
     """Return an MP4 with widely playable H.264 video and AAC audio."""
     streams = media_streams(source)
@@ -185,7 +216,7 @@ def compatible_mp4(source: Path) -> Path:
     command += ["-c:v", "copy"] if copy_video else [
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p"]
     command += ["-c:a", "copy"] if copy_audio else ["-c:a", "aac", "-b:a", "160k"]
-    command += ["-movflags", "+faststart", str(output)]
+    command += ["-tag:v", "avc1", "-movflags", "+faststart", str(output)]
     subprocess.run(command, capture_output=True, check=True, timeout=3600)
     checked = media_streams(output)
     if not any(s.get("codec_type") == "video" and s.get("codec_name") == "h264"
@@ -194,6 +225,12 @@ def compatible_mp4(source: Path) -> Path:
     if audio and not any(s.get("codec_type") == "audio" and s.get("codec_name") == "aac"
                          for s in checked):
         raise RuntimeError("The converted audio is not AAC.")
+    # A valid codec label alone does not prove that the video contains a decodable frame.
+    subprocess.run(
+        ["ffmpeg", "-nostdin", "-v", "error", "-i", str(output),
+         "-map", "0:v:0", "-frames:v", "1", "-f", "null", "-"],
+        capture_output=True, check=True, timeout=60,
+    )
     return output
 
 
@@ -235,6 +272,7 @@ def do_download(job_id: str, meta: dict, file_type: str, quality: str):
                 selection = "b[ext=mp4][height<=720]/bv*[ext=mp4][height<=720]+ba[ext=m4a]/b[height<=720]/bv*[height<=720]+ba/b"
             options.update({
                 "format": selection,
+                "format_sort": ["res", "fps", "+codec:avc:m4a"],
                 "merge_output_format": "mp4",
             })
         with YoutubeDL(options) as ydl:
@@ -309,7 +347,11 @@ def static_files(filename):
 
 @app.get("/api/health")
 def health():
-    return jsonify(ok=True, ffmpeg=bool(shutil.which("ffmpeg")), platform_count=4, demo_ads=True)
+    return jsonify(ok=True, ffmpeg=bool(shutil.which("ffmpeg")),
+                   ffprobe=bool(shutil.which("ffprobe")),
+                   h264_encoder=has_h264_encoder(), node=bool(shutil.which("node")),
+                   platform_count=4,
+                   media_pipeline="h264-aac-verified")
 
 
 @app.post("/api/info")
@@ -340,6 +382,8 @@ def start_download():
             raise InputError("Choose MP4 or MP3 and a supported quality.")
         if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
             return jsonify(error="FFmpeg and FFprobe are required on the server. Install them first."), 503
+        if file_type == "mp4" and not has_h264_encoder():
+            return jsonify(error="This server needs FFmpeg with the libx264 encoder for playable MP4 downloads."), 503
         # A fresh extraction here prevents trusting client-side metadata.
         meta = extract_metadata(url)
     except InputError as exc:

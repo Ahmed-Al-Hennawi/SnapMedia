@@ -1,119 +1,64 @@
-# SnapMedia — multi-platform media downloader (MVP)
+# SnapMedia
 
-An original, responsive website built with **HTML, CSS, vanilla JavaScript and Python (Flask)**. The website supports link inspection and MP4/MP3 downloading through `yt-dlp` with `FFmpeg`, to the extent a source makes public content available. You may download only media you own or are permitted to save. Some platforms prohibit downloads under their terms, even for public media.
+SnapMedia is a responsive website for saving eligible public TikTok, Instagram, YouTube and Facebook media as MP4 or MP3. Use it only for content you own or have permission to save. Availability depends on each source platform.
 
-## What is included
+## Features
 
-- TikTok dark, Instagram gradient-accented, YouTube red and Facebook blue themes, auto-detected from links.
-- Mobile-first design; MP4 selected by default; MP3 as an alternative; Download (up to 720p/128 kbps) and Download HD (up to 1080p/192 kbps).
-- Public-video metadata preview, server-side conversion, progress indicator, temporary downloadable files.
-- 12 interface languages: English, Arabic (with right-to-left layout), Spanish, French, German, Italian, Portuguese, Indonesian, Turkish, Hindi, Japanese and Korean.
-- A contact section and a Buy Me a Coffee style support widget. The support link stays inactive until your account URL is added to `web/config.js`.
-- MP4 downloads are checked and converted to H.264 video with AAC audio for broader playback support. Conversion may take longer when the source uses AV1, VP9 or another codec.
-- Sections for How It Works, Features, About, Contact, frequently asked questions, Terms and Privacy. Legal document bodies are in English, Arabic and Italian, with a visible English fallback for other languages.
-- Ad banner placeholder and opt-in rewarded-ad flow: **demo mode by default**. No real revenue is generated in demo mode.
-- No accounts or downloads-per-user quota. Technical limits prevent misuse: 30 minutes per source, 300 MB per file, 3 concurrent jobs, temporary file expiration of ~1 hour.
+- Four platform themes and automatic link detection.
+- Standard and HD download choices, with MP4 selected by default.
+- MP4 output normalized to H.264 video and AAC audio, then checked for a decodable video frame. AV1 and HEVC sources are converted automatically.
+- Twelve interface languages, including Italian and right-to-left Arabic.
+- Contact section and a Buy Me a Coffee panel. The support link shows “coming soon” until the account URL is added.
+- Temporary downloads that expire after about one hour.
 
-## Instant design preview (no setup)
+The site uses a real Python download backend. There are no simulated downloads or advertising prompts.
 
-Open `SnapMedia-Interactive-Demo.html` from the downloaded project. It is a standalone, offline, clickable preview of themes, languages, formats, video preview and the ad modal. Its link lookups and downloads are **simulated** and labelled clearly. For actual authorized public media downloads, run the full Python project below.
+## Run locally
 
-## Run locally on Mac
-
-### 1. Install Python 3.11+ and FFmpeg
-
-In Terminal:
+Install Python 3.11 or newer, FFmpeg with `ffprobe` and `libx264`, and Node.js 22 or newer. Node is needed for full YouTube extraction support through yt-dlp's bundled EJS component. On macOS with Homebrew:
 
 ```bash
-brew install python ffmpeg
+brew install python ffmpeg node
+./start-mac.sh
 ```
 
-If Homebrew is not installed, visit https://brew.sh/ first. On some computers, Python is already installed (`python3 --version`).
-For MP4 conversion, the deployed FFmpeg installation must include `ffprobe` and the `libx264` encoder.
-
-### 2. Start SnapMedia
+Alternatively, set up the environment manually:
 
 ```bash
-cd SnapMedia
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 python app.py
 ```
 
-Open **http://127.0.0.1:5000** in your browser. HTML files alone will not download videos: the Python backend must be running.
+Open `http://127.0.0.1:5000`. If that port is occupied, set `PORT` to another number before starting the app. Restart the server after changing Python code; a running process does not load edits automatically.
 
-**Note:** `yt-dlp` currently recommends a supported JavaScript runtime for some YouTube content. `yt-dlp[default]` includes its matching EJS component; installing Node.js (`brew install node`) may improve compatibility. Some sites require further support as platforms change; none is guaranteed.
+Paste one public video link, select MP4 or MP3, choose **Get download options**, then choose **Download** or **Download HD**. The server prepares and verifies the file before the browser downloads it. Conversion of a long AV1 or HEVC video may take several minutes.
 
-### 3. Try the flow
+## Contact and support
 
-1. Select a platform, or paste a link and let SnapMedia detect it.
-2. Keep MP4 or choose MP3.
-3. Select **Get download options**.
-4. Select **Download** or **Download HD**.
-5. In demo mode click **Continue to download (demo)**. The server prepares the file, and your browser downloads it when ready.
+The Contact section displays `ahmed.alhennawi9@gmail.com`. When you share your Buy Me a Coffee page, set `buyMeACoffeeUrl` in `web/config.js` to its full `https://buymeacoffee.com/...` URL. Until then, the support panel does not link to an account.
 
-Try only a public video you personally own or have explicit authorization to download.
+## Deploy
 
-## Contact and support link
+Install the dependencies above on a Linux host with enough CPU, storage and bandwidth for video conversion. Install Python packages from `requirements.txt`, then run the app behind HTTPS using a production WSGI server. For a single-instance deployment:
 
-The Contact section displays `ahmed.alhennawi9@gmail.com`. When your Buy Me a Coffee account is ready, set `buyMeACoffeeUrl` in `web/config.js` to your full `https://buymeacoffee.com/...` URL. The floating support button and Contact card will then link to that account. Until then, they show a coming-soon message.
-
-## Advertising: how to make real revenue
-
-`web/config.js` contains optional settings for a Google Ad Manager implementation. The included `web/ads.js` handles a rewarded slot through Google Publisher Tag (GPT): `rewardedSlotReady`, `rewardedSlotGranted`, and `rewardedSlotClosed`. It waits for the user to opt in, does not count abandoned ads as rewarded, and gracefully continues without an ad if no ad fills. There is an optional display banner slot too.
-
-**To connect paid ads:**
-
-1. Obtain approval from an ad network that accepts your website category, content and regional traffic. Do not assume a downloader site qualifies.
-2. Check the ad provider's rewarded-ad rules (including voluntary opt-in and precise reward disclosure). Add the provider's **ad unit paths** to `web/config.js` and change `enabled` to `true` only after approval.
-3. Add a legally appropriate cookie-consent / Consent Management Platform (CMP) before enabling ad-personalization features in applicable territories. Update Privacy Policy for the services actually in use.
-4. **Important production warning:** the frontend ad callback is not secure proof that a user watched an ad. The included `/api/download` endpoint can be called directly, bypassing the visible ad prompt. **Before enforcing a real ad gate or paying for infrastructure**, implement a provider-supported server-verifiable reward or approved event receipt and one-time signed download entitlement. If the provider does not support this, treat ads as an optional funding mechanism, not an enforceable payment gate.
-5. Do not click your own ads or simulate rewarded completions. The default placeholders and demo button are not paid ads.
-
-References: [Google rewarded ad policies](https://support.google.com/admanager/answer/7496282), [Google Publisher Tag example](https://developers.google.com/publisher-tag/samples/display-rewarded-ad).
-
-## Project structure
-
-```
-SnapMedia/
-├── app.py               # URL validation, video metadata, download jobs, temporary file API
-├── start-mac.sh         # One-command Mac setup and launcher
-├── SnapMedia-Interactive-Demo.html # Self-contained clickable design preview
-├── requirements.txt     # Flask + yt-dlp
-├── web/
-│   ├── index.html       # Home page and downloader
-│   ├── styles.css       # Responsive layout and four themes
-│   ├── i18n.js          # 12 UI languages
-│   ├── app.js           # Interactive UI / download flow
-│   ├── ads.js           # Optional rewarded + banner ad integration
-│   ├── config.js        # Public configuration, demo ads by default
-│   ├── terms.html       # Terms page
-│   ├── privacy.html     # Privacy page
-│   ├── legal.js         # Legal page content (English, Arabic, Italian)
-│   ├── snapmedia-logo.png # Main logo
-│   └── favicon.svg
-├── scripts/build_demo.py # Regenerate the offline preview from web/
-├── tests/
-│   └── test_app.py
-└── instance/downloads/ # Temporary output (not committed)
+```bash
+gunicorn --workers 1 --threads 8 --timeout 120 --bind "0.0.0.0:${PORT:-8000}" app:app
 ```
 
-## Production checklist (important)
+Use **one worker process** with the current in-memory job store. All requests for a job must reach the same instance, and its temporary files must remain on local writable storage until downloaded. A process restart clears active jobs. Before scaling to multiple instances, move job state to a shared queue and use shared file storage.
 
-The delivered build is a **working software prototype**, not a production-ready revenue business. Before releasing to the public:
+Set request rate limits and outbound network restrictions at the hosting layer before making the service public. Allowed platform hostnames in the app are not a complete defense against server-side request forgery through redirects or provider behavior. Review the Terms and Privacy pages for your hosting provider, region and business details before launch. The current site does not load advertising scripts.
 
-- Deploy via a production WSGI server and HTTPS, not Flask's development server; provision FFmpeg with FFprobe and libx264, Node.js if needed, storage and a cleanup worker.
-- Move job state from in-memory Python dictionaries to Redis or a real queue if scaling beyond a single worker; enforce authentication/entitlement if paid rewards become a requirement.
-- Add per-IP/network rate limiting, concurrency limits across instances, egress/firewall restrictions, domain/redirect checks, request timeouts, abuse monitoring, download quotas for infrastructure safety, and storage budget alerts. Host allowlisting alone is **not** a full server-side request forgery (SSRF) defense.
-- Add any required legal operator or business details, appropriate cookie-consent tooling and retention disclosures, and obtain reviewed legal terms. Confirm legal and platform-policy compliance for all use cases.
-- Update dependencies frequently: platforms routinely change video extraction. Private or DRM-protected media is not supported. High-definition output depends on source availability; the project does not guarantee watermark removal.
-- Add production tests (including provider mocks and media download end-to-end tests) and monitor actual failures with authorized media links.
+The `/api/health` endpoint reports whether FFmpeg, FFprobe, libx264 and Node are found and identifies the media pipeline. It does not guarantee that any third-party platform will provide a downloadable format.
 
-## Why use Python?
+## Verify
 
-Browsers cannot fetch and convert arbitrary video URLs from major social networks reliably because of cross-origin access restrictions and media formats. Python runs the server-side extractor; FFmpeg handles media merging/conversion. You still build the visible website using only HTML, CSS and JavaScript.
+```bash
+python -m pytest -q
+```
 
----
+The tests cover URL validation, page routes and MP4 conversion. A current real-world platform link should also be tested after deployment, because source platforms change their formats and extraction rules.
 
-Made as the initial SnapMedia project. You can improve it feature by feature while learning HTML, CSS, JavaScript and Python.
+[yt-dlp's format and EJS documentation](https://github.com/yt-dlp/yt-dlp/wiki/EJS) and [Flask's production server guidance](https://flask.palletsprojects.com/en/stable/deploying/) describe the external runtime and hosting requirements.

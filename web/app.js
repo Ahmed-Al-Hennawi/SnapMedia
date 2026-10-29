@@ -5,13 +5,11 @@
   const urlInput=$('video-url');
   const form=$('download-form');
   const result=$('result-section');
-  const reward=$('reward-dialog');
   const progress=$('progress-dialog');
   const status=$('form-status');
   const toastEl=$('toast');
   let platform='tiktok';
   let metadata=null;
-  let pendingQuality='standard';
   let busy=false;
   let toastTimer;
 
@@ -100,15 +98,6 @@
     catch(err){showError(err.message||t('error'));}
     finally{busy=false;$('analyze-button').disabled=false;label.textContent=t('getOptions');}
   }
-  function openReward(quality){
-    if(!metadata)return;
-    pendingQuality=quality;
-    const format=document.querySelector('input[name="media-format"]:checked').value.toUpperCase();
-    $('reward-format').textContent=format+' · '+(quality==='hd'?t('formatHigh'):t('formatStandard'));
-    $('reward-continue').querySelector('span').textContent=window.SNAP_ADS.live?t('rewardButtonLive'):t('rewardButtonDemo');
-    $('reward-disclaimer').hidden=window.SNAP_ADS.live;
-    reward.showModal();
-  }
   function progressUpdate(percent){
     const amount=Math.max(1,Math.min(100,Number(percent)||1));
     $('progress-bar').style.width=amount+'%';
@@ -132,30 +121,47 @@
       $('coffee-widget-pending').hidden=true;
     }
     const setOpen=open=>{panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));};
+    if('IntersectionObserver' in window){
+      const widget=document.querySelector('.coffee-widget');
+      const smallScreen=window.matchMedia('(max-width:680px)');
+      let formVisible=false;
+      const updateVisibility=()=>{
+        const shelved=smallScreen.matches && formVisible;
+        widget.classList.toggle('coffee-widget-shelved',shelved);
+        if(shelved)setOpen(false);
+      };
+      new IntersectionObserver(([entry])=>{formVisible=entry.isIntersecting;updateVisibility();}).observe(form);
+      smallScreen.addEventListener('change',updateVisibility);
+    }
     toggle.addEventListener('click',()=>setOpen(panel.hidden));
     close.addEventListener('click',()=>{setOpen(false);toggle.focus();});
     document.addEventListener('click',event=>{if(!event.target.closest('.coffee-widget'))setOpen(false);});
     document.addEventListener('keydown',event=>{if(event.key==='Escape' && !panel.hidden){setOpen(false);toggle.focus();}});
   }
-  async function beginDownload(){
+  async function beginDownload(quality){
     if(!metadata||busy)return;
     busy=true;
-    const btn=$('reward-continue');btn.disabled=true;
+    const buttons=document.querySelectorAll('[data-quality]');
+    buttons.forEach(button=>button.disabled=true);
     try {
-      const adResult=await window.SNAP_ADS.watchRewardedAd();
-      if(adResult==='declined')return; // No reward granted if user closes early.
-      // If no ad fills, we do not pretend one was watched.
-      if(adResult==='unavailable' && window.SNAP_ADS.live) toast(t('rewardNoFill'));
-      reward.close();
+      const format=document.querySelector('input[name="media-format"]:checked').value;
+      if(format==='mp4'){
+        const health=await api('/api/health');
+        if(health.media_pipeline!=='h264-aac-verified'){
+          throw new Error('The download server needs a restart to provide playable MP4 videos.');
+        }
+        if(!health.h264_encoder){
+          throw new Error('The server needs FFmpeg with libx264 to prepare playable MP4 videos.');
+        }
+      }
       progress.showModal();progressUpdate(3);
       $('progress-detail').textContent=t('progressText');
-      const format=document.querySelector('input[name="media-format"]:checked').value;
-      const job=await api('/api/download','POST',{url:metadata.url,format,quality:pendingQuality});
+      const job=await api('/api/download','POST',{url:metadata.url,format,quality});
       await trackJob(job.id);
     }catch(err){
       if(progress.open) progress.close();
       showError(err.message||t('error'));toast(err.message||t('error'));
-    }finally{busy=false;btn.disabled=false;}
+    }finally{busy=false;buttons.forEach(button=>button.disabled=false);}
   }
   async function trackJob(id){
     const began=Date.now();
@@ -195,18 +201,13 @@
       }catch(_){toast(t('pasteDenied'));urlInput.focus();}
     });
     form.addEventListener('submit',analyze);
-    document.querySelectorAll('[data-quality]').forEach(btn=>btn.addEventListener('click',()=>openReward(btn.dataset.quality)));
-    $('reward-continue').addEventListener('click',beginDownload);
-    $('reward-cancel').addEventListener('click',()=>reward.close());
-    $('close-reward').addEventListener('click',()=>reward.close());
+    document.querySelectorAll('[data-quality]').forEach(btn=>btn.addEventListener('click',()=>beginDownload(btn.dataset.quality)));
     $('progress-close').addEventListener('click',()=>progress.close());
-    reward.addEventListener('click',e=>{if(e.target===reward)reward.close();});
     const menu=$('mobile-nav'),toggle=$('menu-toggle');
     toggle.addEventListener('click',()=>{menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));});
     menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{menu.hidden=true;toggle.setAttribute('aria-expanded','false');}));
-    document.addEventListener('snap:language',()=>{setFormat();updatePlaceholder();if(metadata && !result.hidden){$('reward-format').textContent='';}});
+    document.addEventListener('snap:language',()=>{setFormat();updatePlaceholder();});
     setupCoffeeWidget();
-    window.SNAP_ADS.setupBanner();
   }
   wire();
 })();
