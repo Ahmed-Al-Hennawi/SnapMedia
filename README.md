@@ -38,7 +38,7 @@ Paste one public video link, select MP4 or MP3, choose **Get download options**,
 
 ## Contact and support
 
-The Contact section displays `ahmed.alhennawi9@gmail.com`. When you share your Buy Me a Coffee page, set `buyMeACoffeeUrl` in `web/config.js` to its full `https://buymeacoffee.com/...` URL. Until then, the support panel does not link to an account.
+The Contact section displays `ahmed.alhennawi9@gmail.com`. The support buttons link to your [Buy Me a Coffee page](https://buymeacoffee.com/ahmed_alhennawi); update `buyMeACoffeeUrl` in `web/config.js` if your account URL changes.
 
 ## Deploy
 

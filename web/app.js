@@ -11,6 +11,7 @@
   let platform='tiktok';
   let metadata=null;
   let busy=false;
+  let inputRevision=0;
   let toastTimer;
 
   function t(key){return window.snapT(key);}
@@ -94,8 +95,12 @@
     $('analyze-button').disabled=true;
     const label=$('analyze-button').querySelector('span');
     label.textContent=t('loading');
-    try{showResult(await api('/api/info','POST',{url}));}
-    catch(err){showError(err.message||t('error'));}
+    const revision=inputRevision;
+    try{
+      const info=await api('/api/info','POST',{url});
+      if(revision===inputRevision) showResult(info);
+    }
+    catch(err){if(revision===inputRevision) showError(err.message||t('error'));}
     finally{busy=false;$('analyze-button').disabled=false;label.textContent=t('getOptions');}
   }
   function progressUpdate(percent){
@@ -182,14 +187,24 @@
   }
   function wire(){
     window.snapInitializeLanguages();
+    const syncClearButton=()=>$('url-field').classList.toggle('has-value',Boolean(urlInput.value));
+    syncClearButton();
     setPlatform(platform);
     setFormat();
     $('year').textContent=new Date().getFullYear();
     document.querySelectorAll('[data-platform-option]').forEach(btn=>btn.addEventListener('click',()=>setPlatform(btn.dataset.platformOption)));
     document.querySelectorAll('input[name="media-format"]').forEach(input=>input.addEventListener('change',setFormat));
     urlInput.addEventListener('input',()=>{
+      inputRevision++;
+      syncClearButton();
       const found=detectPlatform(urlInput.value);if(found)setPlatform(found);
       clearError();if(metadata){metadata=null;result.hidden=true;}
+    });
+    window.addEventListener('pageshow',syncClearButton);
+    $('clear-button').addEventListener('click',()=>{
+      urlInput.value='';
+      urlInput.dispatchEvent(new Event('input',{bubbles:true}));
+      urlInput.focus();
     });
     $('paste-button').addEventListener('click',async()=>{
       try{
