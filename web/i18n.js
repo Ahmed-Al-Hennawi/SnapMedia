@@ -1,7 +1,7 @@
 /* Hand-curated interface translations. English serves as fallback for any future keys. */
 window.SNAP_LANGUAGES = [
   ['en','English'],['ar','العربية'],['es','Español'],['fr','Français'],
-  ['de','Deutsch'],['pt','Português'],['id','Bahasa Indonesia'],['tr','Türkçe'],
+  ['de','Deutsch'],['it','Italiano'],['pt','Português'],['id','Bahasa Indonesia'],['tr','Türkçe'],
   ['hi','हिन्दी'],['ja','日本語'],['ko','한국어']
 ];
 window.SNAP_I18N = {
@@ -17,6 +17,80 @@ window.SNAP_I18N = {
  ja:{navHow:'使い方',navFeatures:'機能',navAbout:'概要',eyebrow:'好きな動画を、自由に。',eyebrow2:'登録不要',heroLine1:'お気に入りの動画を。',heroLine2:'かんたんダウンロード。',heroSubtitle:'動画や音声を数秒で保存。リンクを貼り付け、形式を選ぶだけ。',downloadFrom:'対応サービス',selectPlatform:'サービスを選択',platforms:'サービス',pasteLabel:'動画リンクを貼り付け',autoDetect:'サービスを自動判別',paste:'貼り付け',inputHint:'保存する権利のある公開動画に対応します。',chooseFormat:'形式を選択',formatHint:'動画または音声',videoFormat:'動画＋音声',audioFormat:'音声のみ',getOptions:'ダウンロードの選択肢を見る',toolFoot1:'ログイン不要。',toolFoot2:'ファイルは1時間保存',heroNote:'4つのサービスを1か所で。',linkReady:'リンクが見つかりました — 品質を選択',downloadStandard:'ダウンロード',downloadHD:'HDでダウンロード',qualityNote:'品質は元の動画に依存します。HDで高画質化はされません。',advertisement:'広告',adPlaceholder:'ここに広告が表示されます',stepsKicker:'使い方',stepsTitle:'たった3ステップ。',stepsSubtitle:'むずかしい操作は不要。コピーして貼り付けるだけ。',step1Title:'リンクをコピー',step1Desc:'公開動画で「共有」→「リンクをコピー」。',step2Title:'貼り付けて選択',step2Desc:'リンクを貼り、MP4またはMP3を選択。',step3Title:'ファイルを保存',step3Desc:'通常またはHDを選んで保存。',featureKicker:'シンプルな体験',featureTitle:'必要なものだけ。',featureSubtitle:'余計なものはありません。',feature1Title:'4サービスをひとつに',feature1Desc:'TikTok、Instagram、YouTube、Facebookに対応。',feature2Title:'動画も音声も',feature2Desc:'MP4動画またはMP3音声を保存。',feature3Title:'スマホに最適',feature3Desc:'どんな画面にもフィットします。',feature4Title:'多言語に対応',feature4Desc:'アラビア語を含む各言語に切り替え可能。',aboutKicker:'SNAPMEDIAについて',aboutTitle:'大切なものを、もっとかんたんに。',aboutDesc:'SnapMediaはお気に入りのサービスをひとつにまとめます。アカウントや定期購読は不要です。',backToTop:'SnapMediaを使う ↑',faqKicker:'よくある質問',faqTitle:'よくある質問。',faq1Q:'SnapMediaは無料ですか？',faq1A:'はい。登録や課金は不要です。広告がサービスを支えることがあります。',faq2Q:'非公開動画も保存できますか？',faq2A:'いいえ。保存許可のある公開動画のみ対応しています。',faq3Q:'通常とHDの違いは？',faq3A:'通常は最大720p、HDは最大1080p。MP3は128または192 kbpsです。',faq4Q:'動画は保存されますか？',faq4A:'一時ファイルは約1時間後に期限切れとなります。プライバシーポリシーをご確認ください。',footerLine:'好きなメディアに、リンクひとつで。',terms:'利用規約',privacy:'プライバシーポリシー',rights:'無断転載を禁じます。',footerNotice:'TikTok、Meta、Instagram、YouTubeとは無関係です。',rewardKicker:'あともう少し',rewardTitle:'無料サービスを応援。',rewardDesc:'任意の広告視聴でSnapMediaを支援できます。広告がない場合は無料で続けられます。',yourDownload:'ダウンロード',rewardButtonDemo:'続行（デモ）',rewardButtonLive:'広告を見てダウンロード',rewardNoFill:'広告なし — 続行',notNow:'今はしない',demoDisclaimer:'デモモード：実際の広告や収益はありません。',preparing:'ダウンロードを準備中',progressText:'ファイルを準備しています。',close:'閉じる',progressTip:'ダウンロード開始までページを開いてください。',linkPlaceholder:'公開動画のリンクを貼り付け...',loading:'動画を検索中…',invalid:'対応する公開リンクを入力してください。',copied:'貼り付けました',pasteDenied:'手動で貼り付けてください。',busy:'準備中…',ready:'ファイルの準備ができました！',error:'エラーが発生しました。再試行してください。',formatStandard:'通常',formatHigh:'HD',saveFile:'ファイルを保存',legalBack:'← SnapMediaに戻る',legalUpdated:'更新日：2026年10月29日',termsTitle:'利用規約',privacyTitle:'プライバシーポリシー'},
  ko:{navHow:'사용 방법',navFeatures:'기능',navAbout:'소개',eyebrow:'내 영상. 내 방식대로.',eyebrow2:'가입 불필요',heroLine1:'좋아하는 영상을.',heroLine2:'간편하게 다운로드.',heroSubtitle:'좋아하는 플랫폼의 영상과 음성을 몇 초 만에 저장하세요. 링크를 붙여넣고 형식을 선택하면 끝!',downloadFrom:'다운로드 플랫폼',selectPlatform:'플랫폼 선택',platforms:'플랫폼',pasteLabel:'영상 링크 붙여넣기',autoDetect:'플랫폼 자동 감지',paste:'붙여넣기',inputHint:'저장 권한이 있는 공개 영상만 지원합니다.',chooseFormat:'형식 선택',formatHint:'영상 또는 음성',videoFormat:'영상 + 소리',audioFormat:'음성만',getOptions:'다운로드 옵션 보기',toolFoot1:'로그인 필요 없음',toolFoot2:'파일은 1시간 동안 제공',heroNote:'네 플랫폼을 한곳에서.',linkReady:'링크 확인 — 화질 선택',downloadStandard:'다운로드',downloadHD:'HD 다운로드',qualityNote:'화질은 원본에 따라 달라집니다. HD가 원본 화질을 높이지는 않습니다.',advertisement:'광고',adPlaceholder:'광고 공간',stepsKicker:'사용 방법',stepsTitle:'딱 세 단계.',stepsSubtitle:'복잡한 도구 없이 복사, 붙여넣기, 저장.',step1Title:'링크 복사',step1Desc:'공개 영상의 공유 → 링크 복사를 선택하세요.',step2Title:'붙여넣고 선택',step2Desc:'링크를 붙여넣고 MP4 또는 MP3를 고르세요.',step3Title:'파일 저장',step3Desc:'일반 또는 HD를 선택해 저장하세요.',featureKicker:'당신을 위한 디자인',featureTitle:'필요한 것만 담았습니다.',featureSubtitle:'군더더기 없이.',feature1Title:'네 플랫폼, 하나의 도구',feature1Desc:'TikTok, Instagram, YouTube, Facebook 지원.',feature2Title:'영상 또는 음성',feature2Desc:'MP4 영상이나 MP3 음성을 저장하세요.',feature3Title:'모바일 최적화',feature3Desc:'모든 화면에서 편안합니다.',feature4Title:'다양한 언어',feature4Desc:'아랍어를 비롯한 여러 언어로 전환하세요.',aboutKicker:'소개',aboutTitle:'소중한 영상을 간편하게.',aboutDesc:'SnapMedia는 좋아하는 플랫폼을 하나로 모았습니다. 계정이나 구독 없이 간단하게 이용하세요.',backToTop:'SnapMedia 이용하기 ↑',faqKicker:'알아두세요',faqTitle:'자주 묻는 질문.',faq1Q:'무료인가요?',faq1A:'네. 가입이나 구독이 필요 없습니다. 광고로 서비스를 운영할 수 있습니다.',faq2Q:'비공개 영상을 받을 수 있나요?',faq2A:'아니요. 저장할 권리가 있는 공개 영상만 지원합니다.',faq3Q:'일반과 HD 차이는?',faq3A:'일반 최대 720p, HD 최대 1080p(지원 시). MP3는 128 또는 192 kbps입니다.',faq4Q:'영상을 보관하나요?',faq4A:'임시 파일은 약 1시간 후 만료됩니다. 개인정보 처리방침을 확인하세요.',footerLine:'좋아하는 미디어, 링크 하나로.',terms:'이용약관',privacy:'개인정보 처리방침',rights:'모든 권리 보유.',footerNotice:'TikTok, Meta, Instagram, YouTube와 무관합니다.',rewardKicker:'한 단계 더',rewardTitle:'무료 서비스를 응원하세요.',rewardDesc:'선택적으로 짧은 광고를 시청할 수 있습니다. 광고가 없다면 무료로 계속할 수 있습니다.',yourDownload:'다운로드 파일',rewardButtonDemo:'계속하기 (데모)',rewardButtonLive:'광고 보고 다운로드',rewardNoFill:'광고 없음 — 계속',notNow:'나중에',demoDisclaimer:'데모 모드: 실제 광고나 수익이 없습니다.',preparing:'다운로드 준비 중',progressText:'파일을 준비하고 있습니다.',close:'닫기',progressTip:'다운로드가 시작될 때까지 페이지를 열어 두세요.',linkPlaceholder:'공개 영상 링크를 붙여넣으세요...',loading:'영상을 찾는 중…',invalid:'지원되는 공개 링크를 입력하세요.',copied:'붙여넣기 완료',pasteDenied:'직접 링크를 붙여넣으세요.',busy:'준비 중…',ready:'다운로드 준비 완료!',error:'오류가 발생했습니다. 다시 시도하세요.',formatStandard:'일반',formatHigh:'HD',saveFile:'파일 저장',legalBack:'← SnapMedia로 돌아가기',legalUpdated:'수정일: 2026년 10월 29일',termsTitle:'이용약관',privacyTitle:'개인정보 처리방침'}
 };
+Object.assign(window.SNAP_I18N.en, {
+  navContact:'Contact', languageLabel:'Language', contactKicker:'GET IN TOUCH',
+  contactTitle:"Let's talk.", contactIntro:"Have a question, an idea, or feedback about SnapMedia? I'd love to hear from you.",
+  contactEmailTitle:'Send me an email', contactEmailDesc:'For questions, feedback, and collaboration ideas.',
+  coffeeTitle:'Support SnapMedia', coffeeDesc:'If this tool helps you, you can show your support with a coffee.',
+  coffeeAction:'Buy me a coffee', coffeeComing:'Support link coming soon',
+  coffeeWidgetTitle:'Enjoying SnapMedia?', coffeeWidgetDesc:'A coffee is a lovely way to support this free tool.'
+});
+window.SNAP_I18N.it = {
+  navHow:'Come funziona', navFeatures:'Funzionalità', navAbout:'Chi siamo', navContact:'Contatti', languageLabel:'Lingua',
+  eyebrow:'I TUOI CONTENUTI. A MODO TUO.', eyebrow2:'NESSUNA REGISTRAZIONE',
+  heroLine1:'I tuoi video preferiti.', heroLine2:'Un download semplice.',
+  heroSubtitle:'Salva video e audio dalle tue piattaforme preferite in pochi secondi. Incolla un link, scegli il formato e il gioco è fatto.',
+  downloadFrom:'SCARICA DA', selectPlatform:'Scegli una piattaforma per iniziare', platforms:'PIATTAFORME',
+  pasteLabel:'INCOLLA IL LINK DEL VIDEO', autoDetect:'Riconosce automaticamente la piattaforma', paste:'Incolla',
+  inputHint:'Solo per video pubblici che possiedi o che hai il permesso di salvare.',
+  chooseFormat:'SCEGLI IL FORMATO', formatHint:'Video o audio, scegli tu.', videoFormat:'Video con audio', audioFormat:'Solo audio',
+  getOptions:'Visualizza le opzioni', toolFoot1:'Nessun account necessario', toolFoot2:'File disponibile per 1 ora',
+  heroNote:'Quattro piattaforme. Un solo posto.', linkReady:'LINK TROVATO — SCEGLI LA QUALITÀ',
+  downloadStandard:'Scarica', downloadHD:'Scarica in HD', qualityNote:'La qualità dipende dal video originale. HD non migliora la sorgente.',
+  advertisement:'PUBBLICITÀ', adPlaceholder:'Qui potrebbe esserci il tuo annuncio',
+  stepsKicker:'COME FUNZIONA', stepsTitle:'Tre passaggi. Tutto qui.',
+  stepsSubtitle:'Nessuno strumento complicato. Copia, incolla e salva.',
+  step1Title:'Copia il link', step1Desc:'Trova un video pubblico e tocca Condividi → Copia link.',
+  step2Title:'Incolla e scegli', step2Desc:'Incolla il link e scegli video MP4 o audio MP3.',
+  step3Title:'Salva il file', step3Desc:'Scegli la qualità standard o HD, poi salva il file.',
+  featureKicker:'PENSATO PER TE', featureTitle:'Tutto ciò che serve, senza complicazioni.',
+  featureSubtitle:'Le funzioni utili, senza il superfluo.',
+  feature1Title:'Quattro piattaforme, uno strumento', feature1Desc:'Passa facilmente tra TikTok, Instagram, YouTube e Facebook.',
+  feature2Title:'Video o solo audio', feature2Desc:'Scarica un video MP4 o estrai l’audio in MP3.',
+  feature3Title:'Ideale su smartphone', feature3Desc:'Un’esperienza che si adatta a ogni schermo.',
+  feature4Title:'Nella tua lingua', feature4Desc:'Cambia lingua con un tocco, anche con il layout arabo da destra a sinistra.',
+  aboutKicker:'CHI SIAMO', aboutTitle:'Un modo migliore per conservare ciò che conta.',
+  aboutDesc:'SnapMedia riunisce le tue piattaforme preferite in un’esperienza semplice e pulita. Nessun account, abbonamento o passaggio complicato.',
+  backToTop:'Prova SnapMedia ↑',
+  contactKicker:'CONTATTAMI', contactTitle:'Parliamone.',
+  contactIntro:'Hai una domanda, un’idea o un suggerimento su SnapMedia? Scrivimi.',
+  contactEmailTitle:'Mandami un’email', contactEmailDesc:'Per domande, feedback e proposte di collaborazione.',
+  coffeeTitle:'Sostieni SnapMedia', coffeeDesc:'Se questo strumento ti è utile, puoi offrirmi un caffè.',
+  coffeeAction:'Offrimi un caffè', coffeeComing:'Link per il supporto in arrivo',
+  coffeeWidgetTitle:'Ti piace SnapMedia?', coffeeWidgetDesc:'Un caffè è un bel modo per sostenere questo strumento gratuito.',
+  faqKicker:'DA SAPERE', faqTitle:'Domande frequenti.',
+  faq1Q:'SnapMedia è gratuito?', faq1A:'Sì. Puoi usarlo senza account o abbonamento. La pubblicità potrebbe aiutare a sostenere il servizio.',
+  faq2Q:'Posso scaricare video privati?', faq2A:'No. SnapMedia è per contenuti pubblici che possiedi o che hai il permesso di salvare.',
+  faq3Q:'Qual è la differenza tra standard e HD?', faq3A:'I video standard arrivano fino a 720p e quelli HD fino a 1080p, quando disponibili. Per gli MP3 sono disponibili 128 o 192 kbps.',
+  faq4Q:'Conservate i miei video?', faq4A:'I download vengono conservati temporaneamente sul server e scadono dopo circa un’ora. Consulta l’Informativa sulla privacy.',
+  footerLine:'I tuoi contenuti preferiti, a un link di distanza.', terms:'Termini di servizio', privacy:'Informativa sulla privacy',
+  rights:'Tutti i diritti riservati.', footerNotice:'Non affiliato a TikTok, Meta, Instagram o YouTube.',
+  rewardKicker:'UN ULTIMO PASSAGGIO', rewardTitle:'Aiutaci a mantenerlo gratuito.',
+  rewardDesc:'Guarda un breve annuncio facoltativo per sostenere SnapMedia. Se non è disponibile, puoi continuare gratuitamente.',
+  yourDownload:'IL TUO DOWNLOAD', rewardButtonDemo:'Continua il download (demo)', rewardButtonLive:'Guarda l’annuncio e scarica',
+  rewardNoFill:'Nessun annuncio disponibile — continua gratis', notNow:'Non ora', demoDisclaimer:'Modalità demo: nessun annuncio reale o guadagno.',
+  preparing:'Preparazione del download', progressText:'Stiamo preparando il file. Potrebbe volerci un po’.',
+  close:'Chiudi', progressTip:'Tieni aperta questa pagina finché non parte il download.',
+  linkPlaceholder:'Incolla il link di un video pubblico...', loading:'Ricerca del video…',
+  invalid:'Incolla un link pubblico supportato.', copied:'Incollato dagli appunti',
+  pasteDenied:'Accesso agli appunti negato. Incolla il link manualmente.', busy:'Preparazione…',
+  ready:'Il download è pronto!', error:'Qualcosa è andato storto. Riprova.',
+  formatStandard:'Standard', formatHigh:'HD', saveFile:'Salva file', legalBack:'← Torna a SnapMedia',
+  legalUpdated:'Ultimo aggiornamento: 29 ottobre 2026', termsTitle:'Termini di servizio', privacyTitle:'Informativa sulla privacy'
+};
+const extraTranslations = {
+  ar:{navContact:'اتصل بنا',languageLabel:'اللغة',contactKicker:'تواصل معنا',contactTitle:'يسعدني سماع رأيك.',contactIntro:'هل لديك سؤال أو فكرة أو ملاحظة عن SnapMedia؟ راسلني.',contactEmailTitle:'أرسل بريداً إلكترونياً',contactEmailDesc:'للأسئلة والآراء وفرص التعاون.',coffeeTitle:'ادعم SnapMedia',coffeeDesc:'إذا ساعدتك هذه الأداة، يمكنك دعمي بفنجان قهوة.',coffeeAction:'اشترِ لي قهوة',coffeeComing:'رابط الدعم قريباً',coffeeWidgetTitle:'أعجبك SnapMedia؟',coffeeWidgetDesc:'فنجان قهوة يساعد في دعم هذه الأداة المجانية.'},
+  es:{navContact:'Contacto',languageLabel:'Idioma',contactKicker:'PONTE EN CONTACTO',contactTitle:'Hablemos.',contactIntro:'¿Tienes una pregunta, una idea o comentarios sobre SnapMedia? Escríbeme.',contactEmailTitle:'Envíame un correo',contactEmailDesc:'Para preguntas, comentarios y colaboraciones.',coffeeTitle:'Apoya SnapMedia',coffeeDesc:'Si esta herramienta te ayuda, puedes invitarme a un café.',coffeeAction:'Invítame a un café',coffeeComing:'Enlace de apoyo próximamente',coffeeWidgetTitle:'¿Te gusta SnapMedia?',coffeeWidgetDesc:'Un café ayuda a mantener gratis esta herramienta.'},
+  fr:{navContact:'Contact',languageLabel:'Langue',contactKicker:'CONTACT',contactTitle:'Parlons-en.',contactIntro:'Une question, une idée ou un avis sur SnapMedia ? Écrivez-moi.',contactEmailTitle:'Envoyez-moi un e-mail',contactEmailDesc:'Pour les questions, les avis et les collaborations.',coffeeTitle:'Soutenir SnapMedia',coffeeDesc:'Si cet outil vous aide, vous pouvez m’offrir un café.',coffeeAction:'Offrez-moi un café',coffeeComing:'Lien de soutien bientôt disponible',coffeeWidgetTitle:'Vous aimez SnapMedia ?',coffeeWidgetDesc:'Un café aide à soutenir cet outil gratuit.'},
+  de:{navContact:'Kontakt',languageLabel:'Sprache',contactKicker:'KONTAKT',contactTitle:'Schreib mir.',contactIntro:'Hast du eine Frage, Idee oder Feedback zu SnapMedia? Ich freue mich auf deine Nachricht.',contactEmailTitle:'E-Mail senden',contactEmailDesc:'Für Fragen, Feedback und Zusammenarbeit.',coffeeTitle:'SnapMedia unterstützen',coffeeDesc:'Wenn dir dieses Tool hilft, kannst du mich auf einen Kaffee einladen.',coffeeAction:'Kaffee spendieren',coffeeComing:'Support-Link folgt bald',coffeeWidgetTitle:'Gefällt dir SnapMedia?',coffeeWidgetDesc:'Ein Kaffee unterstützt dieses kostenlose Tool.'},
+  pt:{navContact:'Contato',languageLabel:'Idioma',contactKicker:'ENTRE EM CONTATO',contactTitle:'Vamos conversar.',contactIntro:'Tem uma dúvida, ideia ou sugestão sobre o SnapMedia? Escreva para mim.',contactEmailTitle:'Envie um e-mail',contactEmailDesc:'Para dúvidas, opiniões e parcerias.',coffeeTitle:'Apoie o SnapMedia',coffeeDesc:'Se esta ferramenta ajudar você, pode me pagar um café.',coffeeAction:'Pague-me um café',coffeeComing:'Link de apoio em breve',coffeeWidgetTitle:'Gostou do SnapMedia?',coffeeWidgetDesc:'Um café ajuda a manter esta ferramenta gratuita.'},
+  id:{navContact:'Kontak',languageLabel:'Bahasa',contactKicker:'HUBUNGI SAYA',contactTitle:'Mari mengobrol.',contactIntro:'Punya pertanyaan, ide, atau masukan tentang SnapMedia? Kirim email.',contactEmailTitle:'Kirim email',contactEmailDesc:'Untuk pertanyaan, masukan, dan kolaborasi.',coffeeTitle:'Dukung SnapMedia',coffeeDesc:'Jika alat ini membantu, kamu bisa mentraktir saya kopi.',coffeeAction:'Traktir kopi',coffeeComing:'Tautan dukungan segera hadir',coffeeWidgetTitle:'Suka SnapMedia?',coffeeWidgetDesc:'Secangkir kopi membantu mendukung alat gratis ini.'},
+  tr:{navContact:'İletişim',languageLabel:'Dil',contactKicker:'İLETİŞİME GEÇ',contactTitle:'Konuşalım.',contactIntro:'SnapMedia hakkında bir sorun, fikrin veya geri bildirimin mi var? Bana yaz.',contactEmailTitle:'E-posta gönder',contactEmailDesc:'Sorular, geri bildirimler ve iş birlikleri için.',coffeeTitle:'SnapMedia’yı destekle',coffeeDesc:'Bu araç işine yarıyorsa bana bir kahve ısmarlayabilirsin.',coffeeAction:'Bana kahve ısmarla',coffeeComing:'Destek bağlantısı yakında',coffeeWidgetTitle:'SnapMedia’yı beğendin mi?',coffeeWidgetDesc:'Bir kahve bu ücretsiz aracı destekler.'},
+  hi:{navContact:'संपर्क',languageLabel:'भाषा',contactKicker:'संपर्क करें',contactTitle:'बात करते हैं।',contactIntro:'SnapMedia के बारे में कोई सवाल, विचार या सुझाव है? मुझे ईमेल करें।',contactEmailTitle:'ईमेल भेजें',contactEmailDesc:'सवाल, सुझाव और सहयोग के लिए।',coffeeTitle:'SnapMedia को सहयोग दें',coffeeDesc:'यह टूल उपयोगी लगे तो आप मुझे कॉफ़ी पिला सकते हैं।',coffeeAction:'मुझे कॉफ़ी पिलाएँ',coffeeComing:'सहयोग लिंक जल्द आएगा',coffeeWidgetTitle:'SnapMedia पसंद है?',coffeeWidgetDesc:'एक कॉफ़ी इस मुफ़्त टूल को सहारा देती है।'},
+  ja:{navContact:'お問い合わせ',languageLabel:'言語',contactKicker:'お問い合わせ',contactTitle:'お気軽にご連絡ください。',contactIntro:'SnapMediaへのご質問、ご意見、アイデアをメールでお送りください。',contactEmailTitle:'メールを送る',contactEmailDesc:'ご質問、ご意見、協業について。',coffeeTitle:'SnapMediaを応援',coffeeDesc:'このツールが役立ったら、コーヒーで応援できます。',coffeeAction:'コーヒーをおごる',coffeeComing:'応援リンクは近日公開',coffeeWidgetTitle:'SnapMediaはいかがですか？',coffeeWidgetDesc:'コーヒー一杯が無料ツールの支えになります。'},
+  ko:{navContact:'문의',languageLabel:'언어',contactKicker:'문의하기',contactTitle:'이야기해요.',contactIntro:'SnapMedia에 대한 질문, 아이디어 또는 의견이 있다면 이메일을 보내 주세요.',contactEmailTitle:'이메일 보내기',contactEmailDesc:'질문, 의견 및 협업 문의.',coffeeTitle:'SnapMedia 후원하기',coffeeDesc:'이 도구가 도움이 되었다면 커피 한 잔으로 응원할 수 있어요.',coffeeAction:'커피 한 잔 사주기',coffeeComing:'후원 링크 준비 중',coffeeWidgetTitle:'SnapMedia가 마음에 드나요?',coffeeWidgetDesc:'커피 한 잔이 이 무료 도구를 응원합니다.'}
+};
+Object.entries(extraTranslations).forEach(([code, strings]) => Object.assign(window.SNAP_I18N[code], strings));
 window.snapLanguage = function() { let code='en'; try { code=localStorage.getItem('snapmedia_lang') || navigator.language.slice(0,2) || 'en'; } catch(_) {} return window.SNAP_I18N[code] ? code : 'en'; };
 window.snapT = function(key) { const code=document.documentElement.lang || 'en'; return window.SNAP_I18N[code]?.[key] || window.SNAP_I18N.en[key] || key; };
 window.snapApplyLanguage = function(code){
@@ -25,6 +99,7 @@ window.snapApplyLanguage = function(code){
   document.documentElement.dir=code==='ar'?'rtl':'ltr';
   try{localStorage.setItem('snapmedia_lang',code)}catch(_){}
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent=window.snapT(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-label]').forEach(el => { el.setAttribute('aria-label',window.snapT(el.dataset.i18nLabel)); });
   document.querySelectorAll('#language').forEach(sel=>sel.value=code);
   document.dispatchEvent(new CustomEvent('snap:language'));
 };

@@ -7,8 +7,10 @@ An original, responsive website built with **HTML, CSS, vanilla JavaScript and P
 - TikTok dark, Instagram gradient-accented, YouTube red and Facebook blue themes, auto-detected from links.
 - Mobile-first design; MP4 selected by default; MP3 as an alternative; Download (up to 720p/128 kbps) and Download HD (up to 1080p/192 kbps).
 - Public-video metadata preview, server-side conversion, progress indicator, temporary downloadable files.
-- 11 interface languages: English, Arabic (with right-to-left layout), Spanish, French, German, Portuguese, Indonesian, Turkish, Hindi, Japanese and Korean.
-- Sections for How It Works, Features, About, frequently asked questions, Terms and Privacy. Legal document bodies are in English and Arabic only, with a visible English fallback for other languages.
+- 12 interface languages: English, Arabic (with right-to-left layout), Spanish, French, German, Italian, Portuguese, Indonesian, Turkish, Hindi, Japanese and Korean.
+- A contact section and a Buy Me a Coffee style support widget. The support link stays inactive until your account URL is added to `web/config.js`.
+- MP4 downloads are checked and converted to H.264 video with AAC audio for broader playback support. Conversion may take longer when the source uses AV1, VP9 or another codec.
+- Sections for How It Works, Features, About, Contact, frequently asked questions, Terms and Privacy. Legal document bodies are in English, Arabic and Italian, with a visible English fallback for other languages.
 - Ad banner placeholder and opt-in rewarded-ad flow: **demo mode by default**. No real revenue is generated in demo mode.
 - No accounts or downloads-per-user quota. Technical limits prevent misuse: 30 minutes per source, 300 MB per file, 3 concurrent jobs, temporary file expiration of ~1 hour.
 
@@ -27,6 +29,7 @@ brew install python ffmpeg
 ```
 
 If Homebrew is not installed, visit https://brew.sh/ first. On some computers, Python is already installed (`python3 --version`).
+For MP4 conversion, the deployed FFmpeg installation must include `ffprobe` and the `libx264` encoder.
 
 ### 2. Start SnapMedia
 
@@ -51,6 +54,10 @@ Open **http://127.0.0.1:5000** in your browser. HTML files alone will not downlo
 5. In demo mode click **Continue to download (demo)**. The server prepares the file, and your browser downloads it when ready.
 
 Try only a public video you personally own or have explicit authorization to download.
+
+## Contact and support link
+
+The Contact section displays `ahmed.alhennawi9@gmail.com`. When your Buy Me a Coffee account is ready, set `buyMeACoffeeUrl` in `web/config.js` to your full `https://buymeacoffee.com/...` URL. The floating support button and Contact card will then link to that account. Until then, they show a coming-soon message.
 
 ## Advertising: how to make real revenue
 
@@ -77,14 +84,16 @@ SnapMedia/
 ├── web/
 │   ├── index.html       # Home page and downloader
 │   ├── styles.css       # Responsive layout and four themes
-│   ├── i18n.js          # 11 UI languages
+│   ├── i18n.js          # 12 UI languages
 │   ├── app.js           # Interactive UI / download flow
 │   ├── ads.js           # Optional rewarded + banner ad integration
 │   ├── config.js        # Public configuration, demo ads by default
 │   ├── terms.html       # Terms page
 │   ├── privacy.html     # Privacy page
-│   ├── legal.js         # Legal page content (English + Arabic)
+│   ├── legal.js         # Legal page content (English, Arabic, Italian)
+│   ├── snapmedia-logo.png # Main logo
 │   └── favicon.svg
+├── scripts/build_demo.py # Regenerate the offline preview from web/
 ├── tests/
 │   └── test_app.py
 └── instance/downloads/ # Temporary output (not committed)
@@ -94,10 +103,10 @@ SnapMedia/
 
 The delivered build is a **working software prototype**, not a production-ready revenue business. Before releasing to the public:
 
-- Deploy via a production WSGI server and HTTPS, not Flask's development server; provision FFmpeg, Node.js if needed, storage and a cleanup worker.
+- Deploy via a production WSGI server and HTTPS, not Flask's development server; provision FFmpeg with FFprobe and libx264, Node.js if needed, storage and a cleanup worker.
 - Move job state from in-memory Python dictionaries to Redis or a real queue if scaling beyond a single worker; enforce authentication/entitlement if paid rewards become a requirement.
 - Add per-IP/network rate limiting, concurrency limits across instances, egress/firewall restrictions, domain/redirect checks, request timeouts, abuse monitoring, download quotas for infrastructure safety, and storage budget alerts. Host allowlisting alone is **not** a full server-side request forgery (SSRF) defense.
-- Add legal operator contact details, copyright/abuse reporting, appropriate cookie-consent tooling, retention disclosures and reviewed legal terms. Confirm legal and platform-policy compliance for all use cases.
+- Add any required legal operator or business details, appropriate cookie-consent tooling and retention disclosures, and obtain reviewed legal terms. Confirm legal and platform-policy compliance for all use cases.
 - Update dependencies frequently: platforms routinely change video extraction. Private or DRM-protected media is not supported. High-definition output depends on source availability; the project does not guarantee watermark removal.
 - Add production tests (including provider mocks and media download end-to-end tests) and monitor actual failures with authorized media links.
 

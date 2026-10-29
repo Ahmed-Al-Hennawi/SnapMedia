@@ -119,6 +119,24 @@
     anchor.href=url;anchor.download=name||'SnapMedia';
     document.body.append(anchor);anchor.click();anchor.remove();
   }
+  function setupCoffeeWidget(){
+    const toggle=$('coffee-toggle'),panel=$('coffee-panel'),close=$('coffee-close');
+    let supportUrl='';
+    try{
+      const parsed=new URL(window.SNAP_CONFIG?.buyMeACoffeeUrl||'');
+      if(parsed.protocol==='https:' && ['buymeacoffee.com','www.buymeacoffee.com'].includes(parsed.hostname) && parsed.pathname!=='/') supportUrl=parsed.href;
+    }catch(_){/* Link will be added after the support account is shared. */}
+    if(supportUrl){
+      for(const id of ['coffee-section-link','coffee-widget-link']){$(id).href=supportUrl;$(id).hidden=false;}
+      $('coffee-section-pending').hidden=true;
+      $('coffee-widget-pending').hidden=true;
+    }
+    const setOpen=open=>{panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));};
+    toggle.addEventListener('click',()=>setOpen(panel.hidden));
+    close.addEventListener('click',()=>{setOpen(false);toggle.focus();});
+    document.addEventListener('click',event=>{if(!event.target.closest('.coffee-widget'))setOpen(false);});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape' && !panel.hidden){setOpen(false);toggle.focus();}});
+  }
   async function beginDownload(){
     if(!metadata||busy)return;
     busy=true;
@@ -141,7 +159,7 @@
   }
   async function trackJob(id){
     const began=Date.now();
-    while(Date.now()-began<5*60*1000){
+    while(Date.now()-began<30*60*1000){
       const state=await api('/api/jobs/'+encodeURIComponent(id));
       progressUpdate(state.progress||3);
       if(state.status==='ready'){
@@ -187,6 +205,7 @@
     toggle.addEventListener('click',()=>{menu.hidden=!menu.hidden;toggle.setAttribute('aria-expanded',String(!menu.hidden));});
     menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{menu.hidden=true;toggle.setAttribute('aria-expanded','false');}));
     document.addEventListener('snap:language',()=>{setFormat();updatePlaceholder();if(metadata && !result.hidden){$('reward-format').textContent='';}});
+    setupCoffeeWidget();
     window.SNAP_ADS.setupBanner();
   }
   wire();

@@ -1,9 +1,11 @@
 """Run with `python -m pytest -q` after installing requirements and pytest."""
 import pytest
+import shutil
+import subprocess
 
 pytest.importorskip("flask")
 pytest.importorskip("yt_dlp")
-from app import app, identify_url, InputError, nice_filename
+from app import app, identify_url, InputError, nice_filename, compatible_mp4, media_streams
 
 
 @pytest.mark.parametrize('url,platform', [
@@ -59,3 +61,19 @@ def test_static_pages():
     for url in ['/', '/terms', '/privacy', '/styles.css', '/app.js']:
         result = client.get(url)
         assert result.status_code == 200
+
+
+@pytest.mark.skipif(not shutil.which('ffmpeg') or not shutil.which('ffprobe'), reason='FFmpeg is unavailable')
+def test_mp4_is_converted_to_playable_codecs(tmp_path):
+    source = tmp_path / 'sample.mp4'
+    subprocess.run([
+        'ffmpeg', '-nostdin', '-v', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=64x64:rate=2',
+        '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=44100', '-t', '1',
+        '-c:v', 'mpeg4', '-c:a', 'aac', '-shortest', str(source),
+    ], check=True)
+    output = compatible_mp4(source)
+    streams = media_streams(output)
+    assert output.suffix == '.mp4' and output.stat().st_size > 0
+    assert any(s.get('codec_type') == 'video' and s.get('codec_name') == 'h264'
+               and s.get('pix_fmt') == 'yuv420p' for s in streams)
+    assert any(s.get('codec_type') == 'audio' and s.get('codec_name') == 'aac' for s in streams)

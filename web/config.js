@@ -7,4 +7,5 @@ window.SNAP_CONFIG = {
     bannerAdUnit: '',                   // e.g. '/1234567/snapmedia_banner'
   },
   apiBase: '',                          // Same-origin Python backend
+  buyMeACoffeeUrl: '',                  // Add your https://buymeacoffee.com/... page when ready
 };

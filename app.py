@@ -6,8 +6,10 @@ private content access, credential handling, or DRM circumvention.
 from __future__ import annotations
 
 import os
+import json
 import re
 import shutil
+import subprocess
 import threading
 import time
 import uuid
@@ -157,6 +159,44 @@ def set_job(job_id: str, **changes):
             _jobs[job_id].update(changes)
 
 
+def media_streams(path: Path) -> list[dict]:
+    """Read the actual codecs; an .mp4 extension alone says nothing about playback."""
+    probe = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries",
+         "stream=codec_type,codec_name,pix_fmt", "-of", "json", str(path)],
+        capture_output=True, text=True, check=True, timeout=30,
+    )
+    return json.loads(probe.stdout).get("streams", [])
+
+
+def compatible_mp4(source: Path) -> Path:
+    """Return an MP4 with widely playable H.264 video and AAC audio."""
+    streams = media_streams(source)
+    video = next((s for s in streams if s.get("codec_type") == "video"), None)
+    audio = next((s for s in streams if s.get("codec_type") == "audio"), None)
+    if not video:
+        raise RuntimeError("The downloaded file has no video stream.")
+
+    output = source.parent / "media-compatible.mp4"
+    copy_video = video.get("codec_name") == "h264" and video.get("pix_fmt") == "yuv420p"
+    copy_audio = not audio or audio.get("codec_name") == "aac"
+    command = ["ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y",
+               "-i", str(source), "-map", "0:v:0", "-map", "0:a:0?"]
+    command += ["-c:v", "copy"] if copy_video else [
+        "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-pix_fmt", "yuv420p"]
+    command += ["-c:a", "copy"] if copy_audio else ["-c:a", "aac", "-b:a", "160k"]
+    command += ["-movflags", "+faststart", str(output)]
+    subprocess.run(command, capture_output=True, check=True, timeout=3600)
+    checked = media_streams(output)
+    if not any(s.get("codec_type") == "video" and s.get("codec_name") == "h264"
+               and s.get("pix_fmt") == "yuv420p" for s in checked):
+        raise RuntimeError("The converted video is not H.264 MP4.")
+    if audio and not any(s.get("codec_type") == "audio" and s.get("codec_name") == "aac"
+                         for s in checked):
+        raise RuntimeError("The converted audio is not AAC.")
+    return output
+
+
 def do_download(job_id: str, meta: dict, file_type: str, quality: str):
     dest = DOWNLOAD_DIR / job_id
     try:
@@ -196,16 +236,22 @@ def do_download(job_id: str, meta: dict, file_type: str, quality: str):
             options.update({
                 "format": selection,
                 "merge_output_format": "mp4",
-                "postprocessors": [{"key": "FFmpegVideoConvertor", "preferedformat": "mp4"}],
             })
         with YoutubeDL(options) as ydl:
             ydl.extract_info(meta["url"], download=True)
 
         extension = file_type
-        candidates = [p for p in dest.iterdir() if p.is_file() and p.suffix.lower() == f".{extension}"]
+        allowed = {".mp3"} if file_type == "mp3" else {".mp4", ".mkv", ".webm", ".mov"}
+        candidates = [p for p in dest.iterdir() if p.is_file() and p.suffix.lower() in allowed]
         if not candidates:
             raise RuntimeError("Conversion did not produce the requested file. Check FFmpeg installation.")
         file_path = max(candidates, key=lambda p: p.stat().st_mtime)
+        if file_type == "mp4":
+            set_job(job_id, progress=96)
+            file_path = compatible_mp4(file_path)
+            for old_file in candidates:
+                if old_file != file_path:
+                    old_file.unlink(missing_ok=True)
         if file_path.stat().st_size > MAX_FILE_BYTES:
             raise InputError("The converted file exceeded the server size limit.")
         set_job(job_id, status="ready", progress=100, file=str(file_path),
@@ -292,8 +338,8 @@ def start_download():
         quality = body.get("quality", "standard")
         if file_type not in ("mp4", "mp3") or quality not in ("standard", "hd"):
             raise InputError("Choose MP4 or MP3 and a supported quality.")
-        if not shutil.which("ffmpeg"):
-            return jsonify(error="FFmpeg is required on the server. Install it first."), 503
+        if not shutil.which("ffmpeg") or not shutil.which("ffprobe"):
+            return jsonify(error="FFmpeg and FFprobe are required on the server. Install them first."), 503
         # A fresh extraction here prevents trusting client-side metadata.
         meta = extract_metadata(url)
     except InputError as exc:
