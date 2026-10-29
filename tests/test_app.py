@@ -74,7 +74,7 @@ def test_public_seo_metadata_and_sitemap(monkeypatch):
     module = importlib.import_module('app')
     monkeypatch.setattr(module, 'PUBLIC_SITE_URL', 'https://snapmedia.example')
     client = app.test_client()
-    for path in ('/', '/terms', '/privacy'):
+    for path in ('/', '/terms', '/privacy', '/copyright', '/cookies', '/contact'):
         response = client.get(path, headers={'Host': 'attacker.example'})
         html = response.get_data(as_text=True)
         assert response.status_code == 200
@@ -97,13 +97,15 @@ def test_public_seo_metadata_and_sitemap(monkeypatch):
     root = ET.fromstring(sitemap.data)
     urls = [node.text for node in root.findall('.//{*}loc')]
     assert urls == ['https://snapmedia.example/', 'https://snapmedia.example/terms',
-                    'https://snapmedia.example/privacy']
+                    'https://snapmedia.example/privacy', 'https://snapmedia.example/copyright',
+                    'https://snapmedia.example/cookies', 'https://snapmedia.example/contact']
     for old, new in (('/index.html', '/'), ('/terms.html', '/terms'),
-                     ('/privacy.html', '/privacy')):
+                     ('/privacy.html', '/privacy'), ('/copyright.html', '/copyright'),
+                     ('/cookies.html', '/cookies'), ('/contact.html', '/contact')):
         response = client.get(old)
         assert response.status_code == 301 and response.headers['Location'] == new
-    assert '<h2>1. About SnapMedia</h2>' in client.get('/terms').get_data(as_text=True)
-    assert '<h2>1. Overview</h2>' in client.get('/privacy').get_data(as_text=True)
+    assert '<h2>1. About the service</h2>' in client.get('/terms').get_data(as_text=True)
+    assert '<h2>1. Who operates SnapMedia</h2>' in client.get('/privacy').get_data(as_text=True)
 
 
 def test_rate_limit_prevents_repeated_extraction(monkeypatch):
