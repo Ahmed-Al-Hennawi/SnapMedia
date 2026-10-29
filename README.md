@@ -27,6 +27,7 @@ Alternatively, set up the environment manually:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+python -m pip install --upgrade pip setuptools
 python -m pip install -r requirements.txt
 python app.py
 ```
@@ -44,21 +45,28 @@ The Contact section displays `ahmed.alhennawi9@gmail.com`. When you share your B
 Install the dependencies above on a Linux host with enough CPU, storage and bandwidth for video conversion. Install Python packages from `requirements.txt`, then run the app behind HTTPS using a production WSGI server. For a single-instance deployment:
 
 ```bash
+export SNAPMEDIA_SITE_URL="https://your-real-domain.example"
 gunicorn --workers 1 --threads 8 --timeout 120 --bind "0.0.0.0:${PORT:-8000}" app:app
 ```
 
+Set `SNAPMEDIA_SITE_URL` to the final public HTTPS origin, without a path. It is needed for canonical links, the sitemap and social previews. If your HTTPS proxy sets forwarding headers, set `SNAPMEDIA_TRUSTED_PROXY_COUNT` to the exact number of trusted proxy hops; its default is `0`.
+
 Use **one worker process** with the current in-memory job store. All requests for a job must reach the same instance, and its temporary files must remain on local writable storage until downloaded. A process restart clears active jobs. Before scaling to multiple instances, move job state to a shared queue and use shared file storage.
 
-Set request rate limits and outbound network restrictions at the hosting layer before making the service public. Allowed platform hostnames in the app are not a complete defense against server-side request forgery through redirects or provider behavior. Review the Terms and Privacy pages for your hosting provider, region and business details before launch. The current site does not load advertising scripts.
+The app limits expensive information and download requests per client. Add distributed rate limits and outbound network restrictions at the hosting layer before making the service public. Allowed platform hostnames in the app are not a complete defense against server-side request forgery through redirects or provider behavior. Review the Terms and Privacy pages for your hosting provider, region and business details before launch. The current site does not load advertising scripts.
+
+See [launch readiness](docs/launch-readiness.md) for the full hosting, search engine, security and growth checklist, including Search Console and Bing setup. `/robots.txt` and `/sitemap.xml` are served by Flask using your configured public URL.
 
 The `/api/health` endpoint reports whether FFmpeg, FFprobe, libx264 and Node are found and identifies the media pipeline. It does not guarantee that any third-party platform will provide a downloadable format.
 
 ## Verify
 
 ```bash
+python -m pip install -r requirements-dev.txt
 python -m pytest -q
+python -m pip_audit --local
 ```
 
-The tests cover URL validation, page routes and MP4 conversion. A current real-world platform link should also be tested after deployment, because source platforms change their formats and extraction rules.
+The tests cover URL validation, page routes, SEO output, request limits and MP4 conversion. A current real-world platform link should also be tested after deployment, because source platforms change their formats and extraction rules.
 
 [yt-dlp's format and EJS documentation](https://github.com/yt-dlp/yt-dlp/wiki/EJS) and [Flask's production server guidance](https://flask.palletsprojects.com/en/stable/deploying/) describe the external runtime and hosting requirements.

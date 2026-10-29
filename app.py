@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import os
 import json
+import hashlib
+import html
 import re
 import shutil
 import subprocess
@@ -14,11 +16,13 @@ import threading
 import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from collections import deque
 from functools import lru_cache
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
-from flask import Flask, abort, jsonify, request, send_file, send_from_directory
+from flask import Flask, abort, jsonify, make_response, redirect, request, send_file, send_from_directory
+from werkzeug.middleware.proxy_fix import ProxyFix
 from yt_dlp import YoutubeDL
 
 ROOT = Path(__file__).resolve().parent
@@ -31,6 +35,17 @@ MAX_DURATION_SECONDS = int(os.getenv("SNAPMEDIA_MAX_DURATION", "1800"))
 MAX_FILE_BYTES = int(os.getenv("SNAPMEDIA_MAX_MB", "300")) * 1024 * 1024
 FILE_TTL_SECONDS = 3600
 MAX_ACTIVE_JOBS = 3
+PUBLIC_SITE_URL = os.getenv("SNAPMEDIA_SITE_URL", "").rstrip("/")
+if PUBLIC_SITE_URL:
+    try:
+        site_parts = urlsplit(PUBLIC_SITE_URL)
+        site_host = site_parts.hostname
+        _ = site_parts.port  # Reject malformed port values.
+    except ValueError as exc:
+        raise ValueError("SNAPMEDIA_SITE_URL must be a valid HTTPS origin") from exc
+    if (site_parts.scheme != "https" or not site_host or site_parts.username
+            or site_parts.password or site_parts.path or site_parts.query or site_parts.fragment):
+        raise ValueError("SNAPMEDIA_SITE_URL must be an HTTPS origin, such as https://example.com")
 
 HOSTS = {
     "tiktok": ("tiktok.com", "tiktokv.com"),
@@ -42,9 +57,16 @@ HOSTS = {
 app = Flask(__name__, static_folder=None)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024  # Only short JSON inputs
 app.json.ensure_ascii = False
+trusted_proxies = int(os.getenv("SNAPMEDIA_TRUSTED_PROXY_COUNT", "0"))
+if not 0 <= trusted_proxies <= 5:
+    raise ValueError("SNAPMEDIA_TRUSTED_PROXY_COUNT must be between 0 and 5")
+if trusted_proxies:
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=trusted_proxies, x_proto=trusted_proxies)
 executor = ThreadPoolExecutor(max_workers=MAX_ACTIVE_JOBS, thread_name_prefix="snapmedia")
 _jobs: dict[str, dict] = {}
 _jobs_lock = threading.RLock()
+_rate_hits: dict[tuple[str, str], deque[float]] = {}
+_rate_lock = threading.Lock()
 
 
 class InputError(ValueError):
@@ -168,6 +190,30 @@ def periodic_cleanup():
 
 
 threading.Thread(target=periodic_cleanup, daemon=True, name="snapmedia-cleanup").start()
+
+
+def rate_limited(action: str, limit: int) -> bool:
+    """Bound costly extractor requests per client in this single-process deployment."""
+    now = time.monotonic()
+    key = (request.remote_addr or "unknown", action)
+    with _rate_lock:
+        if len(_rate_hits) > 10000:
+            for old_key, hits in list(_rate_hits.items()):
+                if not hits or now - hits[-1] >= 60:
+                    _rate_hits.pop(old_key, None)
+        hits = _rate_hits.setdefault(key, deque())
+        while hits and now - hits[0] >= 60:
+            hits.popleft()
+        if len(hits) >= limit:
+            return True
+        hits.append(now)
+    return False
+
+
+def too_many_requests():
+    response = jsonify(error="Too many requests. Please try again in one minute.")
+    response.headers["Retry-After"] = "60"
+    return response, 429
 
 
 def set_job(job_id: str, **changes):
@@ -303,18 +349,23 @@ def do_download(job_id: str, meta: dict, file_type: str, quality: str):
         shutil.rmtree(dest, ignore_errors=True)
 
 
-@app.before_request
-def maintenance():
-    clear_expired()
-
-
 @app.after_request
 def secure_headers(response):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["X-Frame-Options"] = "DENY"
-    if request.path.startswith("/api/"):
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; "
+        "connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+    )
+    if request.path.startswith("/api/") or response.status_code >= 400:
         response.headers["Cache-Control"] = "no-store"
+    elif request.path in ("/", "/terms", "/privacy", "/robots.txt", "/sitemap.xml"):
+        response.headers["Cache-Control"] = "public, max-age=300, must-revalidate"
+    else:
+        response.headers["Cache-Control"] = "public, max-age=3600, must-revalidate"
     return response
 
 
@@ -325,21 +376,83 @@ def too_large(_):
 
 @app.route("/")
 def index():
-    return send_from_directory(WEB, "index.html")
+    return public_page("index.html", "/")
 
 
 @app.route("/terms")
 def terms():
-    return send_from_directory(WEB, "terms.html")
+    return public_page("terms.html", "/terms")
 
 
 @app.route("/privacy")
 def privacy():
-    return send_from_directory(WEB, "privacy.html")
+    return public_page("privacy.html", "/privacy")
+
+
+@lru_cache(maxsize=3)
+def page_source(filename: str) -> str:
+    return (WEB / filename).read_text(encoding="utf-8")
+
+
+def public_page(filename: str, path: str):
+    """Render crawlable metadata from a trusted deployment URL, never Host input."""
+    source = page_source(filename)
+    seo = ""
+    if PUBLIC_SITE_URL:
+        url = PUBLIC_SITE_URL + path
+        title = {"/": "SnapMedia — Download Public Videos and MP3 Audio",
+                 "/terms": "Terms of Service — SnapMedia",
+                 "/privacy": "Privacy Policy — SnapMedia"}[path]
+        description = {
+            "/": "Download public TikTok, Instagram, YouTube and Facebook videos as playable MP4 or MP3 audio when you have permission. No account needed.",
+            "/terms": "Read the terms for using SnapMedia to save public media you own or have permission to download.",
+            "/privacy": "Learn how SnapMedia handles video links, temporary downloads and language preferences.",
+        }[path]
+        seo = (f'<link rel="canonical" href="{html.escape(url, quote=True)}">'
+               f'<meta property="og:type" content="website">'
+               f'<meta property="og:site_name" content="SnapMedia">'
+               f'<meta property="og:title" content="{html.escape(title, quote=True)}">'
+               f'<meta property="og:description" content="{html.escape(description, quote=True)}">'
+               f'<meta property="og:url" content="{html.escape(url, quote=True)}">'
+               f'<meta property="og:image" content="{html.escape(PUBLIC_SITE_URL + "/snapmedia-logo.png", quote=True)}">')
+        if path == "/":
+            website = {"@context": "https://schema.org", "@type": "WebSite",
+                       "name": "SnapMedia", "url": PUBLIC_SITE_URL + "/"}
+            safe_json = json.dumps(website, ensure_ascii=False).replace("<", "\\u003c")
+            seo += f'<script type="application/ld+json">{safe_json}</script>'
+    response = make_response(source.replace("<!-- SEO_META -->", seo))
+    response.set_etag(hashlib.sha256(response.get_data()).hexdigest())
+    response.make_conditional(request)
+    return response
+
+
+@app.get("/robots.txt")
+def robots():
+    lines = ["User-agent: *", "Disallow: /api/"]
+    if PUBLIC_SITE_URL:
+        lines.append(f"Sitemap: {PUBLIC_SITE_URL}/sitemap.xml")
+    response = make_response("\n".join(lines) + "\n")
+    response.mimetype = "text/plain"
+    return response
+
+
+@app.get("/sitemap.xml")
+def sitemap():
+    if not PUBLIC_SITE_URL:
+        return make_response("Set SNAPMEDIA_SITE_URL before publishing.\n", 503, {"Content-Type": "text/plain"})
+    urls = "".join(f"<url><loc>{html.escape(PUBLIC_SITE_URL + path)}</loc></url>"
+                   for path in ("/", "/terms", "/privacy"))
+    response = make_response(f'<?xml version="1.0" encoding="UTF-8"?>'
+                             f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>')
+    response.mimetype = "application/xml"
+    return response
 
 
 @app.route("/<path:filename>")
 def static_files(filename):
+    canonical_pages = {"index.html": "/", "terms.html": "/terms", "privacy.html": "/privacy"}
+    if filename in canonical_pages:
+        return redirect(canonical_pages[filename], code=301)
     if "/" in filename or filename.startswith("."):
         abort(404)
     return send_from_directory(WEB, filename)
@@ -356,11 +469,13 @@ def health():
 
 @app.post("/api/info")
 def info_route():
+    if rate_limited("info", 12):
+        return too_many_requests()
     body = request.get_json(silent=True) or {}
     if not isinstance(body, dict):
         return jsonify(error="Send a JSON object with a video URL."), 400
     try:
-        platform, url = identify_url(body.get("url", ""))
+        _, url = identify_url(body.get("url", ""))
         meta = extract_metadata(url)
         return jsonify(meta)
     except InputError as exc:
@@ -371,6 +486,8 @@ def info_route():
 
 @app.post("/api/download")
 def start_download():
+    if rate_limited("download", 6):
+        return too_many_requests()
     body = request.get_json(silent=True) or {}
     if not isinstance(body, dict):
         return jsonify(error="Send a JSON object with a video URL."), 400
@@ -384,6 +501,9 @@ def start_download():
             return jsonify(error="FFmpeg and FFprobe are required on the server. Install them first."), 503
         if file_type == "mp4" and not has_h264_encoder():
             return jsonify(error="This server needs FFmpeg with the libx264 encoder for playable MP4 downloads."), 503
+        with _jobs_lock:
+            if sum(job["status"] in ("queued", "working") for job in _jobs.values()) >= MAX_ACTIVE_JOBS:
+                return jsonify(error="SnapMedia is busy. Please try again shortly."), 429, {"Retry-After": "15"}
         # A fresh extraction here prevents trusting client-side metadata.
         meta = extract_metadata(url)
     except InputError as exc:
@@ -394,7 +514,7 @@ def start_download():
     with _jobs_lock:
         active = sum(job["status"] in ("queued", "working") for job in _jobs.values())
         if active >= MAX_ACTIVE_JOBS:
-            return jsonify(error="SnapMedia is busy. Please try again shortly."), 429
+            return jsonify(error="SnapMedia is busy. Please try again shortly."), 429, {"Retry-After": "15"}
         job_id = uuid.uuid4().hex
         _jobs[job_id] = {"created": time.time(), "status": "queued", "progress": 0,
                          "platform": platform, "title": meta["title"]}

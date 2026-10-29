@@ -1,5 +1,6 @@
 (function(){
 'use strict';
+// Keep English sections in terms.html and privacy.html in sync for no-JavaScript visitors.
 const content={
  en:{
   terms:[

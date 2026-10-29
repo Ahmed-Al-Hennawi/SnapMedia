@@ -24,7 +24,7 @@ html[lang=ar] body,html[lang=ar] button,html[lang=ar] input,html[lang=ar] select
 /* Updated identity, controls and contact area */
 [hidden]{display:none!important}
 .icon-sprite{position:absolute;width:0;height:0;overflow:hidden}
-.brand-logo-mark{background:#fff url('/snapmedia-logo.png') -16px -12px / 74px 74px no-repeat!important;border:1px solid #ececf2;box-shadow:0 5px 18px #0002;flex:none}
+.brand-logo-mark{background:#fff url('/snapmedia-logo.webp') -16px -12px / 74px 74px no-repeat!important;border:1px solid #ececf2;box-shadow:0 5px 18px #0002;flex:none}
 .language-selector{height:44px;max-width:none;gap:9px;padding:4px 11px 4px 5px;border-radius:14px;background:color-mix(in srgb,var(--surface) 92%,var(--accent) 8%);box-shadow:0 6px 20px #0000000a;transition:border-color .2s,box-shadow .2s,transform .2s}
 .language-selector:hover{border-color:color-mix(in srgb,var(--accent) 50%,var(--border));transform:translateY(-1px)}
 .language-selector:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 15%,transparent)}
@@ -58,3 +58,4 @@ html[lang=ar] body,html[lang=ar] button,html[lang=ar] input,html[lang=ar] select
 @media(max-width:365px){.language-selector .language-current{max-width:58px}.language-selector select{width:100%;max-width:none}}
 @media(max-width:680px){.coffee-toggle{width:52px;height:52px;padding:6px;border-radius:50%;justify-content:center}.coffee-toggle-mark{width:38px;height:38px}.coffee-toggle>span[data-i18n]{display:none}.coffee-widget{bottom:18px}.eyebrow{max-width:100%;white-space:normal;flex-wrap:wrap;row-gap:3px}}
 @media(max-width:680px){.coffee-widget{transition:opacity .2s,transform .2s}.coffee-widget-shelved{opacity:0;pointer-events:none;transform:translateY(12px)}}
+.about-logo-frame picture{display:block;width:100%;height:100%}

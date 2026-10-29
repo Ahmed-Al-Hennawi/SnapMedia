@@ -5,6 +5,7 @@ import subprocess
 import importlib
 import time
 import os
+import xml.etree.ElementTree as ET
 
 pytest.importorskip("flask")
 pytest.importorskip("yt_dlp")
@@ -67,6 +68,72 @@ def test_static_pages():
     for url in ['/', '/terms', '/privacy', '/styles.css', '/app.js']:
         result = client.get(url)
         assert result.status_code == 200
+
+
+def test_public_seo_metadata_and_sitemap(monkeypatch):
+    module = importlib.import_module('app')
+    monkeypatch.setattr(module, 'PUBLIC_SITE_URL', 'https://snapmedia.example')
+    client = app.test_client()
+    for path in ('/', '/terms', '/privacy'):
+        response = client.get(path, headers={'Host': 'attacker.example'})
+        html = response.get_data(as_text=True)
+        assert response.status_code == 200
+        assert f'<link rel="canonical" href="https://snapmedia.example{path}">' in html
+        assert 'attacker.example' not in html
+        assert '<meta name="description"' in html
+        assert response.headers['Content-Security-Policy'].startswith("default-src 'self'")
+        assert 'public' in response.headers['Cache-Control']
+        assert client.get(path, headers={'If-None-Match': response.headers['ETag']}).status_code == 304
+    homepage = client.get('/').get_data(as_text=True)
+    assert 'application/ld+json' in homepage
+    assert '"@type": "WebSite"' in homepage
+    assert 'application/ld+json' not in client.get('/terms').get_data(as_text=True)
+    robots = client.get('/robots.txt')
+    assert robots.mimetype == 'text/plain'
+    assert 'Sitemap: https://snapmedia.example/sitemap.xml' in robots.get_data(as_text=True)
+    assert 'Disallow: /api/' in robots.get_data(as_text=True)
+    sitemap = client.get('/sitemap.xml')
+    assert sitemap.mimetype == 'application/xml'
+    root = ET.fromstring(sitemap.data)
+    urls = [node.text for node in root.findall('.//{*}loc')]
+    assert urls == ['https://snapmedia.example/', 'https://snapmedia.example/terms',
+                    'https://snapmedia.example/privacy']
+    for old, new in (('/index.html', '/'), ('/terms.html', '/terms'),
+                     ('/privacy.html', '/privacy')):
+        response = client.get(old)
+        assert response.status_code == 301 and response.headers['Location'] == new
+    assert '<h2>1. About SnapMedia</h2>' in client.get('/terms').get_data(as_text=True)
+    assert '<h2>1. Overview</h2>' in client.get('/privacy').get_data(as_text=True)
+
+
+def test_rate_limit_prevents_repeated_extraction(monkeypatch):
+    module = importlib.import_module('app')
+    monkeypatch.setattr(module, '_rate_hits', {})
+    client = app.test_client()
+    for _ in range(12):
+        result = client.post('/api/info', json={'url': 'https://invalid.example/video'})
+        assert result.status_code == 422
+    limited = client.post('/api/info', json={'url': 'https://invalid.example/video'})
+    assert limited.status_code == 429
+    assert limited.headers['Retry-After'] == '60'
+    assert limited.headers['Cache-Control'] == 'no-store'
+
+
+def test_full_queue_rejects_before_network_extraction(monkeypatch):
+    module = importlib.import_module('app')
+    monkeypatch.setattr(module, '_rate_hits', {})
+    monkeypatch.setattr(module, '_jobs', {
+        str(i) * 32: {'created': time.time(), 'status': 'working'} for i in range(3)
+    })
+    monkeypatch.setattr(module.shutil, 'which', lambda _: '/usr/bin/tool')
+    monkeypatch.setattr(module, 'has_h264_encoder', lambda: True)
+    monkeypatch.setattr(module, 'extract_metadata',
+                        lambda _: pytest.fail('Busy queue must not extract metadata'))
+    result = app.test_client().post('/api/download', json={
+        'url': 'https://www.youtube.com/watch?v=abc', 'format': 'mp4'})
+    assert result.status_code == 429
+    assert result.headers['Retry-After'] == '15'
+    assert result.headers['Cache-Control'] == 'no-store'
 
 
 @pytest.mark.skipif(not shutil.which('ffmpeg') or not shutil.which('ffprobe'), reason='FFmpeg is unavailable')
