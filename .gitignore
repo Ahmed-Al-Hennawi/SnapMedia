@@ -6,3 +6,4 @@ instance/downloads/*
 !instance/downloads/.gitkeep
 .env
 .DS_Store
+/SnapMedia/
