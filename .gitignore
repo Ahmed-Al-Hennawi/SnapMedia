@@ -7,3 +7,6 @@ instance/downloads/*
 .env
 .DS_Store
 /SnapMedia/
+*.log
+downloads/
+temp/
