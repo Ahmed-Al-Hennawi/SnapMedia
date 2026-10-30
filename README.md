@@ -14,6 +14,30 @@ SnapMedia helps you save public videos from **TikTok, Instagram, YouTube, and Fa
 
 The site uses a Flask backend, yt-dlp, and FFmpeg to prepare real downloads. It does not include simulated download buttons or advertising prompts.
 
+## Technologies used
+
+SnapMedia pairs a responsive website with a Python service that prepares each requested file.
+
+| Technology | What it does |
+| --- | --- |
+| HTML5 | Structures the pages, forms, and download controls. |
+| CSS3 | Styles the interface, animations, and mobile layouts. |
+| JavaScript | Handles link input, language selection, download options, and requests to the backend. |
+| Python and Flask | Serve the website and API, validate requests, and manage temporary download jobs. |
+| yt-dlp | Retrieves available media information and downloads supported public media. |
+| FFmpeg and FFprobe | Convert and inspect media so MP4 and MP3 files are ready to download. |
+| Node.js | Supports yt-dlp's YouTube extraction when needed. |
+| Gunicorn | Runs the Flask app on a production server. |
+| Git and GitHub | Track the source code and its versions. |
+| Python virtual environment (`venv`) | Keeps the project's Python packages separate from system packages. |
+
+### How they work together
+
+1. A visitor pastes a public video link and chooses MP4 or MP3 in the browser.
+2. JavaScript sends the request to Flask, which validates the link and asks yt-dlp to retrieve the media.
+3. FFmpeg prepares the chosen format, and FFprobe helps verify the resulting file.
+4. Flask sends the file to the browser. The server keeps a temporary copy for the download and normally removes it after about one hour; SnapMedia does not maintain a permanent video library.
+
 ## Try it locally
 
 You'll need **Python 3.11+**, **FFmpeg** with `ffprobe` and the `libx264` encoder, and **Node.js 22+** for full YouTube extraction support.
