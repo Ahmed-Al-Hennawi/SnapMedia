@@ -74,6 +74,8 @@ This tree lists the files tracked in the project. Generated downloads, the local
 SnapMedia/
 ├── .env.example                   Example environment settings
 ├── .gitignore                     Local and generated files excluded from Git
+├── .vscode/
+│   └── settings.json               Hides local clutter in VS Code Explorer
 ├── README.md                      Project overview and local setup
 ├── app.py                         Flask server, routes, and media preparation
 ├── requirements.txt               Python packages needed to run the app
@@ -92,25 +94,30 @@ SnapMedia/
 ├── tests/
 │   └── test_app.py                 Backend and route regression tests
 └── web/
-    ├── ads-config.js              Settings for inactive ad spaces
-    ├── ads-placeholders.css        Ad space styling
-    ├── ads-placeholders.js         Ad space behavior
-    ├── app.js                      Downloader interface and interactions
-    ├── config.js                   Public site configuration
-    ├── contact.html                Contact page
-    ├── cookies.html                Cookie Policy page
-    ├── copyright.html              Copyright Policy page
-    ├── favicon.svg                 Browser tab icon
-    ├── i18n.js                     Interface translations
     ├── index.html                  Main website page
-    ├── legal.js                    Legal page translations and content
-    ├── privacy-controls.css        Privacy controls styling
-    ├── privacy-controls.js         Cookie consent and privacy choices
-    ├── privacy.html                 Privacy Policy page
-    ├── snapmedia-logo.png          Main logo image
-    ├── snapmedia-logo.webp         Optimized main logo image
-    ├── styles.css                  Main website styling
-    └── terms.html                  Terms of Use page
+    ├── pages/                      Contact and legal pages
+    │   ├── contact.html            Contact page
+    │   ├── cookies.html            Cookie Policy page
+    │   ├── copyright.html          Copyright Policy page
+    │   ├── privacy.html            Privacy Policy page
+    │   └── terms.html              Terms of Use page
+    └── assets/                     Files served at their existing public URLs
+        ├── css/
+        │   ├── ads-placeholders.css Ad space styling
+        │   ├── privacy-controls.css Privacy controls styling
+        │   └── styles.css          Main website styling
+        ├── js/
+        │   ├── ads-config.js       Settings for inactive ad spaces
+        │   ├── ads-placeholders.js  Ad space behavior
+        │   ├── app.js              Downloader interface and interactions
+        │   ├── config.js           Public site configuration
+        │   ├── i18n.js             Interface translations
+        │   ├── legal.js            Legal page translations and content
+        │   └── privacy-controls.js Cookie consent and privacy choices
+        └── images/
+            ├── favicon.svg         Browser tab icon
+            ├── snapmedia-logo.png  Main logo image
+            └── snapmedia-logo.webp Optimized main logo image
 ```
 
 ## Verify changes

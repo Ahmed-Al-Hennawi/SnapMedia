@@ -91,7 +91,11 @@ def test_health_and_input_rejection():
 
 def test_static_pages():
     client = app.test_client()
-    for url in ['/', '/terms', '/privacy', '/styles.css', '/app.js']:
+    for url in ['/', '/terms', '/privacy', '/copyright', '/cookies', '/contact',
+                '/styles.css', '/privacy-controls.css', '/ads-placeholders.css',
+                '/app.js', '/config.js', '/i18n.js', '/legal.js',
+                '/privacy-controls.js', '/ads-config.js', '/ads-placeholders.js',
+                '/favicon.svg', '/snapmedia-logo.png', '/snapmedia-logo.webp']:
         result = client.get(url)
         assert result.status_code == 200
 

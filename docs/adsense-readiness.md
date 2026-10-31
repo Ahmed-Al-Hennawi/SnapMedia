@@ -1,6 +1,6 @@
 # AdSense readiness and inactive placements
 
-The visible advertisement spaces are **placeholders only**. They have no links, scripts, tracking, publisher ID, or ad requests. Each space can be turned off independently in `web/ads-config.js`. The file also reserves fields for a future publisher ID and slot IDs, but filling them in does **not** activate ads.
+The visible advertisement spaces are **placeholders only**. They have no links, scripts, tracking, publisher ID, or ad requests. Each space can be turned off independently in `web/assets/js/ads-config.js`. The file also reserves fields for a future publisher ID and slot IDs, but filling them in does **not** activate ads.
 
 ## Policy blocker
 

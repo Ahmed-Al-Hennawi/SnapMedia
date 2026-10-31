@@ -417,7 +417,8 @@ def contact_page():
 
 @lru_cache(maxsize=3)
 def page_source(filename: str) -> str:
-    return (WEB / filename).read_text(encoding="utf-8")
+    page = WEB / "index.html" if filename == "index.html" else WEB / "pages" / filename
+    return page.read_text(encoding="utf-8")
 
 
 def public_page(filename: str, path: str):
@@ -488,7 +489,11 @@ def static_files(filename):
         return redirect(canonical_pages[filename], code=301)
     if "/" in filename or filename.startswith("."):
         abort(404)
-    return send_from_directory(WEB, filename)
+    asset_folder = {".css": "css", ".js": "js", ".svg": "images",
+                    ".png": "images", ".webp": "images"}.get(Path(filename).suffix.lower())
+    if not asset_folder:
+        abort(404)
+    return send_from_directory(WEB / "assets" / asset_folder, filename)
 
 
 @app.get("/api/health")
