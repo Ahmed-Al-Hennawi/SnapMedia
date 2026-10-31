@@ -280,6 +280,19 @@ def compatible_mp4(source: Path) -> Path:
     return output
 
 
+def video_format_options(platform: str, quality: str) -> tuple[str, list[str]]:
+    if platform == "tiktok":
+        # TikTok portrait formats can be 720x1280: filtering on height would
+        # exclude 720p while allowing a lower-quality HD fallback.
+        return ("b[ext=mp4]/bv*+ba/b",
+                [f"res:{1080 if quality == 'hd' else 720}", "quality", "br", "fps", "+codec:avc:m4a"])
+    if quality == "hd":
+        selection = "bv*[ext=mp4][height<=1080]+ba[ext=m4a]/b[ext=mp4][height<=1080]/bv*[height<=1080]+ba/b[height<=1080]/b"
+    else:
+        selection = "b[ext=mp4][height<=720]/bv*[ext=mp4][height<=720]+ba[ext=m4a]/b[height<=720]/bv*[height<=720]+ba/b"
+    return selection, ["res", "fps", "+codec:avc:m4a"]
+
+
 def do_download(job_id: str, meta: dict, file_type: str, quality: str):
     dest = DOWNLOAD_DIR / job_id
     try:
@@ -312,13 +325,10 @@ def do_download(job_id: str, meta: dict, file_type: str, quality: str):
                                     "preferredquality": "192" if quality == "hd" else "128"}],
             })
         else:
-            if quality == "hd":
-                selection = "bv*[ext=mp4][height<=1080]+ba[ext=m4a]/b[ext=mp4][height<=1080]/bv*[height<=1080]+ba/b[height<=1080]/b"
-            else:
-                selection = "b[ext=mp4][height<=720]/bv*[ext=mp4][height<=720]+ba[ext=m4a]/b[height<=720]/bv*[height<=720]+ba/b"
+            selection, format_sort = video_format_options(meta.get("platform", ""), quality)
             options.update({
                 "format": selection,
-                "format_sort": ["res", "fps", "+codec:avc:m4a"],
+                "format_sort": format_sort,
                 "merge_output_format": "mp4",
             })
         with YoutubeDL(options) as ydl:

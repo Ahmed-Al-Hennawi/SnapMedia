@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 pytest.importorskip("flask")
 pytest.importorskip("yt_dlp")
-from app import app, identify_url, InputError, nice_filename, compatible_mp4, media_streams
+from app import app, identify_url, InputError, nice_filename, compatible_mp4, media_streams, video_format_options
 
 
 @pytest.mark.parametrize('url,platform', [
@@ -50,6 +50,32 @@ def test_query_strip_fragment():
 def test_file_name_sanitization():
     result = nice_filename('../cat: <video>/?', 'mp4')
     assert '/' not in result and ':' not in result and result.endswith('.mp4')
+
+
+@pytest.mark.parametrize('dimensions', [
+    ((540, 960), (720, 1280), (1080, 1920)),
+    ((960, 540), (1280, 720), (1920, 1080)),
+])
+def test_tiktok_hd_selects_better_source_than_standard(dimensions):
+    from yt_dlp import YoutubeDL
+
+    formats = [
+        {'format_id': f'{resolution}p', 'url': f'https://example.test/{resolution}',
+         'ext': 'mp4', 'vcodec': 'h264', 'acodec': 'aac',
+         'width': width, 'height': height, 'quality': index, 'tbr': bitrate}
+        for index, (resolution, (width, height), bitrate) in enumerate(
+            zip((540, 720, 1080), dimensions, (1500, 2400, 4000)), start=1)
+    ]
+    selected = {}
+    for quality in ('standard', 'hd'):
+        selection, sort = video_format_options('tiktok', quality)
+        info = {'id': 'test', 'title': 'TikTok sample', 'extractor': 'TikTok',
+                'extractor_key': 'TikTok', 'formats': [fmt.copy() for fmt in formats],
+                '_format_sort_fields': ('quality', 'codec', 'size', 'br')}
+        with YoutubeDL({'quiet': True, 'skip_download': True,
+                        'format': selection, 'format_sort': sort}) as ydl:
+            selected[quality] = ydl.process_ie_result(info, download=False)['format_id']
+    assert selected == {'standard': '720p', 'hd': '1080p'}
 
 
 def test_health_and_input_rejection():
