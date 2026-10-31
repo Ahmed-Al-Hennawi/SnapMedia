@@ -10,3 +10,4 @@ instance/downloads/*
 *.log
 downloads/
 temp/
+.vscode/
